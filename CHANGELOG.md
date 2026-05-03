@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.8.5](https://github.com/aws-actions/amazon-ecs-render-task-definition/compare/v1.8.4...v1.8.5) (2026-04-30)
+
+
+### Bug Fixes
+
+* allow secrets to render without environment-variables ([#464](https://github.com/aws-actions/amazon-ecs-render-task-definition/issues/464)) ([46a24f1](https://github.com/aws-actions/amazon-ecs-render-task-definition/commit/46a24f179d1273a42e3bebcf6f6fbfc58a38d96e))
+
+### [1.8.4](https://github.com/aws-actions/amazon-ecs-render-task-definition/compare/v1.8.3...v1.8.4) (2026-03-20)
+
+
+### Bug Fixes
+
+* upgrade Node.js runtime from 20 to 24 ([#457](https://github.com/aws-actions/amazon-ecs-render-task-definition/issues/457)) ([872f52a](https://github.com/aws-actions/amazon-ecs-render-task-definition/commit/872f52a952090f1e5c0a74571a9770401a664051)), closes [#454](https://github.com/aws-actions/amazon-ecs-render-task-definition/issues/454)
+
 ### [1.8.3](https://github.com/aws-actions/amazon-ecs-render-task-definition/compare/v1.8.2...v1.8.3) (2026-01-16)
 
 ### [1.8.2](https://github.com/aws-actions/amazon-ecs-render-task-definition/compare/v1.8.1...v1.8.2) (2025-12-18)
