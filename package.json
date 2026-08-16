@@ -1,6 +1,6 @@
 {
   "name": "aws-actions-amazon-ecs-render-task-definition",
-  "version": "1.8.5",
+  "version": "1.9.0",
   "description": "Render Amazon ECS task definition file",
   "main": "index.js",
   "scripts": {
@@ -26,8 +26,8 @@
   "homepage": "https://github.com/aws-actions/amazon-ecs-render-task-definition#readme",
   "dependencies": {
     "@actions/core": "^2.0.2",
-    "@aws-sdk/client-ecs": "^3.923.0",
-    "tmp": "^0.2.5"
+    "@aws-sdk/client-ecs": "^3.1077.0",
+    "tmp": "^0.2.6"
   },
   "devDependencies": {
     "@vercel/ncc": "^0.38.4",
