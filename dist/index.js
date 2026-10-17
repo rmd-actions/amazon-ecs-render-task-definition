@@ -73,7 +73,14 @@ async function run() {
       if (!fs.existsSync(taskDefPath)) {
         throw new Error(`Task definition file does not exist: ${taskDefinitionFile}`);
       }
-      taskDefContents = require(taskDefPath);
+      // Read the file and parse it strictly as JSON data
+      try {
+        // Strip a leading UTF-8 BOM, which JSON.parse rejects
+        const fileContents = fs.readFileSync(taskDefPath, 'utf8').replace(/^\uFEFF/, '');
+        taskDefContents = JSON.parse(fileContents);
+      } catch (error) {
+        throw new Error(`Failed to parse task definition file as JSON: ${taskDefinitionFile}. ${error.message}`);
+      }
     } else if (taskDefinitionArn || taskDefinitionFamily || taskDefinitionRevision) {
       if (taskDefinitionArn) {
         core.info("The task definition arn will be used to fetch task definition");
@@ -3829,7 +3836,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.1105.0";
+var version = "3.1140.0";
 var packageInfo = {
 	version: version};
 
@@ -4421,6 +4428,7 @@ const _DEGSRes = "DescribeExpressGatewayServiceRequest";
 const _DEGSResc = "DescribeExpressGatewayServiceResponse";
 const _DEGSe = "DescribeExpressGatewayService";
 const _DES = "DeploymentEphemeralStorage";
+const _DESC = "DeploymentEarlySuccessCriteria";
 const _DL = "DevicesList";
 const _DLH = "DeploymentLifecycleHook";
 const _DLHD = "DeploymentLifecycleHookDetail";
@@ -4938,6 +4946,7 @@ const _cont = "container";
 const _conta = "containers";
 const _cou = "count";
 const _cp = "cpu";
+const _cr = "critical";
 const _d = "details";
 const _dA = "daemonArn";
 const _dAe = "deploymentArn";
@@ -5006,6 +5015,7 @@ const _eP = "entryPoint";
 const _eRA = "executionRoleArn";
 const _eS = "effectiveSettings";
 const _eSA = "executionStoppedAt";
+const _eSC = "earlySuccessCriteria";
 const _eSp = "ephemeralStorage";
 const _eVC = "efsVolumeConfiguration";
 const _en = "environment";
@@ -5049,9 +5059,10 @@ const _hD = "hookDetails";
 const _hE = "httpError";
 const _hI = "hookId";
 const _hL = "hardLimit";
-const _hP = "hostPath";
+const _hP = "healthyPercent";
 const _hPR = "hostPortRange";
-const _hPo = "hostPort";
+const _hPo = "hostPath";
+const _hPos = "hostPort";
 const _hS = "healthStatus";
 const _hTA = "hookTargetArn";
 const _he = "header";
@@ -5293,6 +5304,7 @@ const _sSA = "stabilityStatusAt";
 const _sSG = "serviceSecurityGroups";
 const _sSGB = "storageSizeGiB";
 const _sSR = "sourceServiceRevisions";
+const _sSRC = "sourceServiceRevisionCleanup";
 const _sSV = "stringSetValue";
 const _sSt = "stabilityStatus";
 const _sT = "startTimeout";
@@ -5362,6 +5374,8 @@ const _tT = "targetType";
 const _tTR = "testTrafficRules";
 const _tV = "targetValue";
 const _tVo = "tokenValue";
+const _tWDC = "totalWithoutDaemonCount";
+const _tWDIC = "totalWithoutDaemonInstanceCount";
 const _ta = "tags";
 const _tas = "tasks";
 const _task = "task";
@@ -5391,12 +5405,14 @@ const _ve = "version";
 const _vo = "volumes";
 const _w = "weight";
 const _wD = "workingDirectory";
+const _wDC = "withoutDaemonCount";
+const _wDIC = "withoutDaemonInstanceCount";
 const _xN = "xmlName";
 const n0 = "com.amazonaws.ecs";
-const _s_registry = TypeRegistry.for(_s);
+const _s_registry = new TypeRegistry(_s);
 var ECSServiceException$ = [-3, _s, "ECSServiceException", 0, [], []];
 _s_registry.registerError(ECSServiceException$, ECSServiceException);
-const n0_registry = TypeRegistry.for(n0);
+const n0_registry = new TypeRegistry(n0);
 var AccessDeniedException$ = [-3, n0, _ADE,
     { [_e]: _c, [_hE]: 403 },
     [_m],
@@ -5759,8 +5775,8 @@ var CreateClusterResponse$ = [3, n0, _CCRr,
 ];
 var CreateDaemonRequest$ = [3, n0, _CDR,
     0,
-    [_dNa, _dTDA, _cPAa, _cA, _dC, _ta, _pTr, _eECSMT, _eEC, _cT],
-    [0, 0, 64 | 0, 0, () => DaemonDeploymentConfiguration$, () => Tags, 0, 2, 2, 0], 3
+    [_dNa, _dTDA, _cPAa, _cA, _dC, _ta, _pTr, _eECSMT, _eEC, _cT, _cr],
+    [0, 0, 64 | 0, 0, () => DaemonDeploymentConfiguration$, () => Tags, 0, 2, 2, 0, 2], 3
 ];
 var CreateDaemonResponse$ = [3, n0, _CDRr,
     0,
@@ -5774,8 +5790,8 @@ var CreatedAt$ = [3, n0, _CA,
 ];
 var CreateExpressGatewayServiceRequest$ = [3, n0, _CEGSR,
     0,
-    [_iRA, _eRA, _sN, _cl, _hCP, _pC, _tRA, _nC, _cp, _me, _sTc, _ta, _tDA],
-    [0, 0, 0, 0, 0, [() => ExpressGatewayContainer$, 0], 0, () => ExpressGatewayServiceNetworkConfiguration$, 0, 0, () => ExpressGatewayScalingTarget$, () => Tags, 0], 1
+    [_iRA, _eRA, _sN, _cl, _hCP, _pC, _tRA, _nC, _cp, _me, _cAp, _sTc, _ta, _tDA],
+    [0, 0, 0, 0, 0, [() => ExpressGatewayContainer$, 0], 0, () => ExpressGatewayServiceNetworkConfiguration$, 0, 0, 0, () => ExpressGatewayScalingTarget$, () => Tags, 0], 1
 ];
 var CreateExpressGatewayServiceResponse$ = [3, n0, _CEGSRr,
     0,
@@ -5814,8 +5830,8 @@ var DaemonAlarmConfiguration$ = [3, n0, _DAC,
 ];
 var DaemonCapacityProvider$ = [3, n0, _DCP,
     0,
-    [_ar, _rCu],
-    [0, 1]
+    [_ar, _rCu, _wDC],
+    [0, 1, 1]
 ];
 var DaemonCircuitBreaker$ = [3, n0, _DCB,
     0,
@@ -5844,8 +5860,8 @@ var DaemonDeploymentAlarms$ = [3, n0, _DDA,
 ];
 var DaemonDeploymentCapacityProvider$ = [3, n0, _DDCP,
     0,
-    [_ar, _rIC, _dIC],
-    [0, 1, 1]
+    [_ar, _rIC, _wDIC, _dIC],
+    [0, 1, 1, 1]
 ];
 var DaemonDeploymentConfiguration$ = [3, n0, _DDC,
     0,
@@ -5854,8 +5870,8 @@ var DaemonDeploymentConfiguration$ = [3, n0, _DDC,
 ];
 var DaemonDeploymentRevisionDetail$ = [3, n0, _DDRD,
     0,
-    [_ar, _cPap, _tRIC, _tDIC],
-    [0, () => DaemonDeploymentCapacityProviderList, 1, 1]
+    [_ar, _cPap, _tRIC, _tWDIC, _tDIC],
+    [0, () => DaemonDeploymentCapacityProviderList, 1, 1, 1]
 ];
 var DaemonDeploymentSummary$ = [3, n0, _DDS,
     0,
@@ -5874,13 +5890,13 @@ var DaemonLinuxParameters$ = [3, n0, _DLP,
 ];
 var DaemonRevision$ = [3, n0, _DR,
     0,
-    [_dRA, _cA, _dA, _dTDA, _cAr, _cI, _pTr, _eECSMT, _eEC],
-    [0, 0, 0, 0, 4, () => DaemonContainerImages, 0, 2, 2]
+    [_dRA, _cA, _dA, _dTDA, _cAr, _cI, _pTr, _eECSMT, _eEC, _cr],
+    [0, 0, 0, 0, 4, () => DaemonContainerImages, 0, 2, 2, 2]
 ];
 var DaemonRevisionDetail$ = [3, n0, _DRD,
     0,
-    [_ar, _cPap, _tRC],
-    [0, () => DaemonCapacityProviderList, 1]
+    [_ar, _cPap, _tRC, _tWDC],
+    [0, () => DaemonCapacityProviderList, 1, 1]
 ];
 var DaemonRollback$ = [3, n0, _DRa,
     0,
@@ -6024,13 +6040,18 @@ var DeploymentCircuitBreaker$ = [3, n0, _DCBe,
 ];
 var DeploymentConfiguration$ = [3, n0, _DC,
     0,
-    [_dCB, _mPa, _mHP, _al, _str, _bTIM, _lH, _lCi, _cC],
-    [() => DeploymentCircuitBreaker$, 1, 1, () => DeploymentAlarms$, 0, 1, () => DeploymentLifecycleHookList, () => LinearConfiguration$, () => CanaryConfiguration$]
+    [_dCB, _mPa, _mHP, _al, _str, _bTIM, _lH, _lCi, _cC, _eSC],
+    [() => DeploymentCircuitBreaker$, 1, 1, () => DeploymentAlarms$, 0, 1, () => DeploymentLifecycleHookList, () => LinearConfiguration$, () => CanaryConfiguration$, () => DeploymentEarlySuccessCriteria$]
 ];
 var DeploymentController$ = [3, n0, _DCe,
     0,
     [_t],
     [0], 1
+];
+var DeploymentEarlySuccessCriteria$ = [3, n0, _DESC,
+    0,
+    [_enab, _hP, _sSRC],
+    [2, 1, 0], 1
 ];
 var DeploymentEphemeralStorage$ = [3, n0, _DES,
     0,
@@ -6214,7 +6235,7 @@ var DescribeTasksResponse$ = [3, n0, _DTRe,
 ];
 var Device$ = [3, n0, _De,
     0,
-    [_hP, _cPo, _pe],
+    [_hPo, _cPo, _pe],
     [0, 0, 64 | 0], 1
 ];
 var DiscoverPollEndpointRequest$ = [3, n0, _DPER,
@@ -6309,8 +6330,8 @@ var ExpressGatewayServiceAwsLogsConfiguration$ = [3, n0, _EGSALC,
 ];
 var ExpressGatewayServiceConfiguration$ = [3, n0, _EGSC,
     0,
-    [_sRAe, _eRA, _tRA, _tDA, _cp, _me, _nC, _hCP, _pC, _sTc, _iP, _cAr],
-    [0, 0, 0, 0, 0, 0, () => ExpressGatewayServiceNetworkConfiguration$, 0, [() => ExpressGatewayContainer$, 0], () => ExpressGatewayScalingTarget$, () => IngressPathSummaries, 4]
+    [_sRAe, _eRA, _tRA, _tDA, _cp, _me, _cAp, _nC, _hCP, _pC, _sTc, _iP, _cAr],
+    [0, 0, 0, 0, 0, 0, 0, () => ExpressGatewayServiceNetworkConfiguration$, 0, [() => ExpressGatewayContainer$, 0], () => ExpressGatewayScalingTarget$, () => IngressPathSummaries, 4]
 ];
 var ExpressGatewayServiceNetworkConfiguration$ = [3, n0, _EGSNC,
     0,
@@ -6709,7 +6730,7 @@ var NetworkBandwidthGbpsRequest$ = [3, n0, _NBGR,
 ];
 var NetworkBinding$ = [3, n0, _NB,
     0,
-    [_bIP, _cPon, _hPo, _pr, _cPR, _hPR],
+    [_bIP, _cPon, _hPos, _pr, _cPR, _hPR],
     [0, 1, 1, 0, 0, 0]
 ];
 var NetworkConfiguration$ = [3, n0, _NC,
@@ -6744,7 +6765,7 @@ var PlatformDevice$ = [3, n0, _PD,
 ];
 var PortMapping$ = [3, n0, _PM,
     0,
-    [_cPon, _hPo, _pr, _n, _aP, _cPR],
+    [_cPon, _hPos, _pr, _n, _aP, _cPR],
     [1, 1, 0, 0, 0, 0]
 ];
 var ProtectedTask$ = [3, n0, _PT,
@@ -7229,8 +7250,8 @@ var UpdateContainerInstancesStateResponse$ = [3, n0, _UCISRp,
 ];
 var UpdateDaemonRequest$ = [3, n0, _UDR,
     0,
-    [_dA, _dTDA, _cPAa, _dC, _pTr, _eECSMT, _eEC],
-    [0, 0, 64 | 0, () => DaemonDeploymentConfiguration$, 0, 2, 2], 3
+    [_dA, _dTDA, _cPAa, _dC, _pTr, _eECSMT, _eEC, _cr],
+    [0, 0, 64 | 0, () => DaemonDeploymentConfiguration$, 0, 2, 2, 2], 3
 ];
 var UpdateDaemonResponse$ = [3, n0, _UDRp,
     0,
@@ -7244,8 +7265,8 @@ var UpdatedExpressGatewayService$ = [3, n0, _UEGS,
 ];
 var UpdateExpressGatewayServiceRequest$ = [3, n0, _UEGSR,
     0,
-    [_sAe, _eRA, _hCP, _pC, _tRA, _nC, _cp, _me, _sTc, _tDA],
-    [0, 0, 0, [() => ExpressGatewayContainer$, 0], 0, () => ExpressGatewayServiceNetworkConfiguration$, 0, 0, () => ExpressGatewayScalingTarget$, 0], 1
+    [_sAe, _eRA, _hCP, _pC, _tRA, _nC, _cp, _me, _cAp, _sTc, _tDA],
+    [0, 0, 0, [() => ExpressGatewayContainer$, 0], 0, () => ExpressGatewayServiceNetworkConfiguration$, 0, 0, 0, () => ExpressGatewayScalingTarget$, 0], 1
 ];
 var UpdateExpressGatewayServiceResponse$ = [3, n0, _UEGSRp,
     0,
@@ -9271,6 +9292,10 @@ const ThresholdType = {
     COUNT: "COUNT",
     UNBOUNDED_PERCENT: "UNBOUNDED_PERCENT",
 };
+const ServiceRevisionCleanup = {
+    BLOCKING: "BLOCKING",
+    DEFERRED: "DEFERRED",
+};
 const DeploymentLifecycleHookStage = {
     POST_PRODUCTION_TRAFFIC_SHIFT: "POST_PRODUCTION_TRAFFIC_SHIFT",
     POST_SCALE_UP: "POST_SCALE_UP",
@@ -9320,6 +9345,10 @@ const ServiceDeploymentStatus = {
     STOPPED: "STOPPED",
     STOP_REQUESTED: "STOP_REQUESTED",
     SUCCESSFUL: "SUCCESSFUL",
+};
+const ExpressCpuArchitecture = {
+    ARM64: "ARM64",
+    X86_64: "X86_64",
 };
 const ExpressGatewayServiceScalingMetric = {
     AverageCPUUtilization: "AVERAGE_CPU",
@@ -9621,6 +9650,7 @@ exports.DeploymentCircuitBreaker$ = DeploymentCircuitBreaker$;
 exports.DeploymentConfiguration$ = DeploymentConfiguration$;
 exports.DeploymentController$ = DeploymentController$;
 exports.DeploymentControllerType = DeploymentControllerType;
+exports.DeploymentEarlySuccessCriteria$ = DeploymentEarlySuccessCriteria$;
 exports.DeploymentEphemeralStorage$ = DeploymentEphemeralStorage$;
 exports.DeploymentLifecycleHook$ = DeploymentLifecycleHook$;
 exports.DeploymentLifecycleHookAction = DeploymentLifecycleHookAction;
@@ -9725,6 +9755,7 @@ exports.ExecuteCommandLogConfiguration$ = ExecuteCommandLogConfiguration$;
 exports.ExecuteCommandLogging = ExecuteCommandLogging;
 exports.ExecuteCommandRequest$ = ExecuteCommandRequest$;
 exports.ExecuteCommandResponse$ = ExecuteCommandResponse$;
+exports.ExpressCpuArchitecture = ExpressCpuArchitecture;
 exports.ExpressGatewayContainer$ = ExpressGatewayContainer$;
 exports.ExpressGatewayRepositoryCredentials$ = ExpressGatewayRepositoryCredentials$;
 exports.ExpressGatewayScalingTarget$ = ExpressGatewayScalingTarget$;
@@ -9976,6 +10007,7 @@ exports.ServiceNotFoundException = ServiceNotFoundException;
 exports.ServiceNotFoundException$ = ServiceNotFoundException$;
 exports.ServiceRegistry$ = ServiceRegistry$;
 exports.ServiceRevision$ = ServiceRevision$;
+exports.ServiceRevisionCleanup = ServiceRevisionCleanup;
 exports.ServiceRevisionLoadBalancer$ = ServiceRevisionLoadBalancer$;
 exports.ServiceRevisionOverrides$ = ServiceRevisionOverrides$;
 exports.ServiceRevisionSummary$ = ServiceRevisionSummary$;
@@ -15267,6 +15299,8 @@ function memoizeChain(providers, treatAsExpired) {
                         .then((c) => {
                         credentials = c;
                     })
+                        .catch(() => {
+                    })
                         .finally(() => {
                         passiveLock = undefined;
                     });
@@ -15820,7 +15854,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.997.41";
+var version = "3.997.45";
 var packageInfo = {
 	version: version};
 
@@ -16044,10 +16078,10 @@ const _tO = "tokenOutput";
 const _tT = "tokenType";
 const _tt = "token_type";
 const n0 = "com.amazonaws.signin";
-const _s_registry = TypeRegistry.for(_s);
+const _s_registry = new TypeRegistry(_s);
 var SigninServiceException$ = [-3, _s, "SigninServiceException", 0, [], []];
 _s_registry.registerError(SigninServiceException$, SigninServiceException);
-const n0_registry = TypeRegistry.for(n0);
+const n0_registry = new TypeRegistry(n0);
 var AccessDeniedException$ = [-3, n0, _ADE,
     { [_e]: _c },
     [_e, _m],
@@ -16417,7 +16451,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.997.41";
+var version = "3.997.45";
 var packageInfo = {
 	version: version};
 
@@ -16711,10 +16745,10 @@ const _sc = "scope";
 const _se = "server";
 const _tT = "tokenType";
 const n0 = "com.amazonaws.ssooidc";
-const _s_registry = TypeRegistry.for(_s);
+const _s_registry = new TypeRegistry(_s);
 var SSOOIDCServiceException$ = [-3, _s, "SSOOIDCServiceException", 0, [], []];
 _s_registry.registerError(SSOOIDCServiceException$, SSOOIDCServiceException);
-const n0_registry = TypeRegistry.for(n0);
+const n0_registry = new TypeRegistry(n0);
 var AccessDeniedException$ = [-3, n0, _ADE,
     { [_e]: _c, [_hE]: 400 },
     [_e, _r, _ed],
@@ -17098,7 +17132,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.997.41";
+var version = "3.997.45";
 var packageInfo = {
 	version: version};
 
@@ -17250,10 +17284,10 @@ const _sAK = "secretAccessKey";
 const _sT = "sessionToken";
 const _xasbt = "x-amz-sso_bearer_token";
 const n0 = "com.amazonaws.sso";
-const _s_registry = TypeRegistry.for(_s);
+const _s_registry = new TypeRegistry(_s);
 var SSOServiceException$ = [-3, _s, "SSOServiceException", 0, [], []];
 _s_registry.registerError(SSOServiceException$, SSOServiceException);
-const n0_registry = TypeRegistry.for(n0);
+const n0_registry = new TypeRegistry(n0);
 var InvalidRequestException$ = [-3, n0, _IRE,
     { [_e]: _c, [_hE]: 400 },
     [_m],
@@ -17753,7 +17787,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.997.41";
+var version = "3.997.45";
 var packageInfo = {
 	version: version};
 
@@ -17872,6 +17906,7 @@ const _IDPRCE = "IDPRejectedClaimException";
 const _IITE = "InvalidIdentityTokenException";
 const _K = "Key";
 const _MPDE = "MalformedPolicyDocumentException";
+const _MSTS = "MinimumSessionTokenSize";
 const _P = "Policy";
 const _PA = "PolicyArns";
 const _PAr = "ProviderArn";
@@ -17891,6 +17926,8 @@ const _SFWIT = "SubjectFromWebIdentityToken";
 const _SI = "SourceIdentity";
 const _SN = "SerialNumber";
 const _ST = "SessionToken";
+const _STS = "SessionTokenSize";
+const _STU = "SessionTokenUtilization";
 const _T = "Tags";
 const _TC = "TokenCode";
 const _TTK = "TransitiveTagKeys";
@@ -17909,10 +17946,10 @@ const _pDLT = "policyDescriptorListType";
 const _s = "smithy.ts.sdk.synthetic.com.amazonaws.sts";
 const _tLT = "tagListType";
 const n0 = "com.amazonaws.sts";
-const _s_registry = TypeRegistry.for(_s);
+const _s_registry = new TypeRegistry(_s);
 var STSServiceException$ = [-3, _s, "STSServiceException", 0, [], []];
 _s_registry.registerError(STSServiceException$, STSServiceException);
-const n0_registry = TypeRegistry.for(n0);
+const n0_registry = new TypeRegistry(n0);
 var ExpiredTokenException$ = [-3, n0, _ETE,
     { [_aQE]: [`ExpiredTokenException`, 400], [_e]: _c, [_hE]: 400 },
     [_m],
@@ -17968,23 +18005,23 @@ var AssumedRoleUser$ = [3, n0, _ARU,
 ];
 var AssumeRoleRequest$ = [3, n0, _ARR,
     0,
-    [_RA, _RSN, _PA, _P, _DS, _T, _TTK, _EI, _SN, _TC, _SI, _PC],
-    [0, 0, () => policyDescriptorListType, 0, 1, () => tagListType, 64 | 0, 0, 0, 0, 0, () => ProvidedContextsListType], 2
+    [_RA, _RSN, _PA, _P, _DS, _T, _TTK, _EI, _SN, _TC, _SI, _PC, _MSTS],
+    [0, 0, () => policyDescriptorListType, 0, 1, () => tagListType, 64 | 0, 0, 0, 0, 0, () => ProvidedContextsListType, 1], 2
 ];
 var AssumeRoleResponse$ = [3, n0, _ARRs,
     0,
-    [_C, _ARU, _PPS, _SI],
-    [[() => Credentials$, 0], () => AssumedRoleUser$, 1, 0]
+    [_C, _ARU, _PPS, _SI, _STU, _STS],
+    [[() => Credentials$, 0], () => AssumedRoleUser$, 1, 0, 1, 1]
 ];
 var AssumeRoleWithWebIdentityRequest$ = [3, n0, _ARWWIR,
     0,
-    [_RA, _RSN, _WIT, _PI, _PA, _P, _DS],
-    [0, 0, [() => clientTokenType, 0], 0, () => policyDescriptorListType, 0, 1], 3
+    [_RA, _RSN, _WIT, _PI, _PA, _P, _DS, _MSTS],
+    [0, 0, [() => clientTokenType, 0], 0, () => policyDescriptorListType, 0, 1, 1], 3
 ];
 var AssumeRoleWithWebIdentityResponse$ = [3, n0, _ARWWIRs,
     0,
-    [_C, _SFWIT, _ARU, _PPS, _Pr, _Au, _SI],
-    [[() => Credentials$, 0], 0, () => AssumedRoleUser$, 1, 0, 0, 0]
+    [_C, _SFWIT, _ARU, _PPS, _Pr, _Au, _SI, _STU, _STS],
+    [[() => Credentials$, 0], 0, () => AssumedRoleUser$, 1, 0, 0, 0, 1, 1]
 ];
 var Credentials$ = [3, n0, _C,
     0,
@@ -18603,7 +18640,7 @@ const writeSSOTokenToFile = (id, ssoToken) => {
     return writeFile(tokenFilepath, tokenString);
 };
 
-const lastRefreshAttemptTime = new Date(0);
+const lastRefreshAttemptTimes = new Map();
 const fromSso = (init = {}) => async ({ callerClientConfig } = {}) => {
     init.logger?.debug("@aws-sdk/token-providers - fromSso");
     const profiles = await parseKnownFiles(init);
@@ -18640,11 +18677,15 @@ const fromSso = (init = {}) => async ({ callerClientConfig } = {}) => {
     validateTokenKey("accessToken", ssoToken.accessToken);
     validateTokenKey("expiresAt", ssoToken.expiresAt);
     const { accessToken, expiresAt } = ssoToken;
-    const existingToken = { token: accessToken, expiration: new Date(expiresAt) };
+    const existingToken = {
+        token: accessToken,
+        expiration: new Date(expiresAt),
+    };
     if (existingToken.expiration.getTime() - Date.now() > EXPIRE_WINDOW_MS) {
         return existingToken;
     }
-    if (Date.now() - lastRefreshAttemptTime.getTime() < 30 * 1000) {
+    const lastRefreshAttemptTime = lastRefreshAttemptTimes.get(ssoSessionName) ?? 0;
+    if (Date.now() - lastRefreshAttemptTime < 30 * 1000) {
         validateTokenExpiry(existingToken);
         return existingToken;
     }
@@ -18652,7 +18693,7 @@ const fromSso = (init = {}) => async ({ callerClientConfig } = {}) => {
     validateTokenKey("clientSecret", ssoToken.clientSecret, true);
     validateTokenKey("refreshToken", ssoToken.refreshToken, true);
     try {
-        lastRefreshAttemptTime.setTime(Date.now());
+        lastRefreshAttemptTimes.set(ssoSessionName, Date.now());
         const newSsoOidcToken = await getNewSsoOidcToken(ssoToken, ssoRegion, init, callerClientConfig);
         validateTokenKey("accessToken", newSsoOidcToken.accessToken);
         validateTokenKey("expiresIn", newSsoOidcToken.expiresIn);
@@ -19219,7 +19260,7 @@ exports.InvokeStoreBase = InvokeStoreBase;
 /***/ 402:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
-const { getSmithyContext } = __nccwpck_require__(4534);
+const { getSmithyContext, hasOwn } = __nccwpck_require__(4534);
 exports.getSmithyContext = getSmithyContext;
 const { HttpRequest } = __nccwpck_require__(3422);
 const { requestBuilder } = __nccwpck_require__(3422);
@@ -19424,6 +19465,8 @@ class DefaultIdentityProviderConfig {
     authSchemes = new Map();
     constructor(config) {
         for (const key in config) {
+            if (!hasOwn(config, key))
+                continue;
             const value = config[key];
             if (value !== undefined) {
                 this.authSchemes.set(key, value);
@@ -19569,9 +19612,9 @@ exports.setFeature = setFeature;
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 const { nv, NumericValue, calculateBodyLength, generateIdempotencyToken, fromBase64, _parseEpochTimestamp } = __nccwpck_require__(2430);
+const { hasOwn, getSmithyContext } = __nccwpck_require__(4534);
 const { HttpRequest, collectBody, SerdeContext, RpcProtocol } = __nccwpck_require__(3422);
 const { NormalizedSchema, deref, TypeRegistry } = __nccwpck_require__(6890);
-const { getSmithyContext } = __nccwpck_require__(4534);
 
 const majorUint64 = 0;
 const majorNegativeInt64 = 1;
@@ -19869,23 +19912,39 @@ function decodeTagValue(at, to, minor, unsignedInt, offset) {
     }
     else if (minor === 4) {
         const decimalFraction = decode(at + offset, to);
-        const [exponent, mantissa] = decimalFraction;
+        const [rawExponent, mantissa] = decimalFraction;
         const normalizer = mantissa < 0 ? -1 : 1;
-        const mantissaStr = "0".repeat(Math.abs(exponent) + 1) + String(BigInt(normalizer) * BigInt(mantissa));
-        let numericString;
+        const absMantissa = BigInt(normalizer) * BigInt(mantissa);
+        const mantissaDigits = String(absMantissa);
         const sign = mantissa < 0 ? "-" : "";
-        numericString =
-            exponent === 0
-                ? mantissaStr
-                : mantissaStr.slice(0, mantissaStr.length + exponent) + "." + mantissaStr.slice(exponent);
-        numericString = numericString.replace(/^0+/g, "");
-        if (numericString === "") {
-            numericString = "0";
+        let numericString;
+        const isSmallExponent = typeof rawExponent === "number" && Math.abs(rawExponent) <= 2 ** 28;
+        if (isSmallExponent) {
+            const exponent = rawExponent;
+            const mantissaStr = "0".repeat(Math.abs(exponent) + 1) + mantissaDigits;
+            numericString =
+                exponent === 0
+                    ? mantissaStr
+                    : mantissaStr.slice(0, mantissaStr.length + exponent) + "." + mantissaStr.slice(exponent);
+            numericString = numericString.replace(/^0+/g, "");
+            if (numericString === "") {
+                numericString = "0";
+            }
+            if (numericString[0] === ".") {
+                numericString = "0" + numericString;
+            }
+            numericString = sign + numericString;
         }
-        if (numericString[0] === ".") {
-            numericString = "0" + numericString;
+        else {
+            const bigExponent = BigInt(rawExponent);
+            if (mantissaDigits.length === 1) {
+                numericString = sign + mantissaDigits + "e" + String(bigExponent);
+            }
+            else {
+                const adjustedExp = bigExponent + BigInt(mantissaDigits.length - 1);
+                numericString = sign + mantissaDigits[0] + "." + mantissaDigits.slice(1) + "e" + String(adjustedExp);
+            }
         }
-        numericString = sign + numericString;
         _offset = offset + _offset;
         return nv(numericString);
     }
@@ -20234,13 +20293,21 @@ function encode(_input) {
         }
         else if (typeof input === "object") {
             if (input instanceof NumericValue) {
-                const decimalIndex = input.string.indexOf(".");
-                const exponent = decimalIndex === -1 ? 0 : decimalIndex - input.string.length + 1;
-                const mantissa = BigInt(input.string.replace(".", ""));
+                let str = input.string;
+                let expOffset = BigInt(0);
+                const eIndex = str.search(/[eE]/);
+                if (eIndex !== -1) {
+                    expOffset = BigInt(str.slice(eIndex + 1));
+                    str = str.slice(0, eIndex);
+                }
+                const decimalIndex = str.indexOf(".");
+                const fractionDigits = decimalIndex === -1 ? 0 : str.length - decimalIndex - 1;
+                const exponent = expOffset - BigInt(fractionDigits);
+                const mantissa = BigInt(str.replace(".", ""));
                 data[cursor$1++] = 0b110_00100;
                 encodeInteger(majorList, 2);
                 encodeStack.push(mantissa);
-                encodeStack.push(exponent);
+                encodeStack.push(exponent >= -0x20000000000000n && exponent <= 0x1fffffffffffffn ? Number(exponent) : exponent);
                 continue;
             }
             if (input[tagSymbol]) {
@@ -20448,23 +20515,10 @@ const loadSmithyRpcV2CborErrorCode = (output, data) => {
         if (cleanValue.indexOf(":") >= 0) {
             cleanValue = cleanValue.split(":")[0];
         }
-        if (cleanValue.indexOf("#") >= 0) {
-            cleanValue = cleanValue.split("#")[1];
-        }
         return cleanValue;
     };
     if (data["__type"] !== undefined) {
         return sanitizeErrorCode(data["__type"]);
-    }
-    let codeKey;
-    for (const key in data) {
-        if (key.toLowerCase() === "code") {
-            codeKey = key;
-            break;
-        }
-    }
-    if (codeKey && data[codeKey] !== undefined) {
-        return sanitizeErrorCode(data[codeKey]);
     }
 };
 const checkCborResponse = (response) => {
@@ -20490,6 +20544,8 @@ const buildHttpRpcRequest = async (context, headers, path, resolvedHostname, bod
     }
     if (endpoint.headers) {
         for (const name in endpoint.headers) {
+            if (!hasOwn(endpoint.headers, name))
+                continue;
             contents.headers[name] = endpoint.headers[name];
         }
     }
@@ -20750,6 +20806,8 @@ function writeStruct(ns, value, serdeContext) {
     }
     if (typeof value.__type === "string") {
         for (const k in value) {
+            if (!hasOwn(value, k))
+                continue;
             if (!memberNames.includes(k)) {
                 writeString(k);
                 writeUntypedValue(value[k]);
@@ -20815,6 +20873,8 @@ function writeMap(ns, value, isDocument, serdeContext) {
     const valueSchema = ns.getValueSchema();
     const keys = [];
     for (const k in value) {
+        if (!hasOwn(value, k))
+            continue;
         const v = value[k];
         if (isDocument ? v !== undefined : v != null || sparse) {
             keys.push(k);
@@ -21076,14 +21136,27 @@ function writeTag(tagValue, innerValue) {
     writeUntypedValue(innerValue);
 }
 function writeNumericValue(nv) {
-    const decimalIndex = nv.string.indexOf(".");
-    const exponent = decimalIndex === -1 ? 0 : decimalIndex - nv.string.length + 1;
-    const mantissa = BigInt(nv.string.replace(".", ""));
+    let str = nv.string;
+    let expOffset = BigInt(0);
+    const eIndex = str.search(/[eE]/);
+    if (eIndex !== -1) {
+        expOffset = BigInt(str.slice(eIndex + 1));
+        str = str.slice(0, eIndex);
+    }
+    const decimalIndex = str.indexOf(".");
+    const fractionDigits = decimalIndex === -1 ? 0 : str.length - decimalIndex - 1;
+    const exponent = expOffset - BigInt(fractionDigits);
+    const mantissa = BigInt(str.replace(".", ""));
     ensure(9);
     buf[cursor++] = 0b110_00100;
     encodeHeader(majorList, 2);
     ensure(9);
-    writeInteger(exponent);
+    if (exponent >= -0x20000000000000n && exponent <= 0x1fffffffffffffn) {
+        writeInteger(Number(exponent));
+    }
+    else {
+        writeBigInt(exponent);
+    }
     writeBigInt(mantissa);
 }
 function writeTimestamp(date) {
@@ -21215,6 +21288,8 @@ function readStruct(ns, count, startPos) {
     if (isUnion) {
         let resultEmpty = true;
         for (const _ in result) {
+            if (!hasOwn(result, _))
+                continue;
             resultEmpty = false;
             break;
         }
@@ -21254,23 +21329,39 @@ function readTag(ns) {
     if (tagNumber === 4) {
         const docSchema = NormalizedSchema.of(15);
         const pair = readValue(docSchema);
-        const [exponent, mantissa] = pair;
+        const [rawExponent, mantissa] = pair;
         const normalizer = mantissa < 0 ? -1 : 1;
-        const mantissaStr = "0".repeat(Math.abs(exponent) + 1) + String(BigInt(normalizer) * BigInt(mantissa));
-        let numericString;
+        const absMantissa = BigInt(normalizer) * BigInt(mantissa);
+        const mantissaDigits = String(absMantissa);
         const sign = mantissa < 0 ? "-" : "";
-        numericString =
-            exponent === 0
-                ? mantissaStr
-                : mantissaStr.slice(0, mantissaStr.length + exponent) + "." + mantissaStr.slice(exponent);
-        numericString = numericString.replace(/^0+/g, "");
-        if (numericString === "") {
-            numericString = "0";
+        let numericString;
+        const isSmallExponent = typeof rawExponent === "number" && Math.abs(rawExponent) <= 2 ** 28;
+        if (isSmallExponent) {
+            const exponent = rawExponent;
+            const mantissaStr = "0".repeat(Math.abs(exponent) + 1) + mantissaDigits;
+            numericString =
+                exponent === 0
+                    ? mantissaStr
+                    : mantissaStr.slice(0, mantissaStr.length + exponent) + "." + mantissaStr.slice(exponent);
+            numericString = numericString.replace(/^0+/g, "");
+            if (numericString === "") {
+                numericString = "0";
+            }
+            if (numericString[0] === ".") {
+                numericString = "0" + numericString;
+            }
+            numericString = sign + numericString;
         }
-        if (numericString[0] === ".") {
-            numericString = "0" + numericString;
+        else {
+            const bigExponent = BigInt(rawExponent);
+            if (mantissaDigits.length === 1) {
+                numericString = sign + mantissaDigits + "e" + String(bigExponent);
+            }
+            else {
+                const adjustedExp = bigExponent + BigInt(mantissaDigits.length - 1);
+                numericString = sign + mantissaDigits[0] + "." + mantissaDigits.slice(1) + "e" + String(adjustedExp);
+            }
         }
-        numericString = sign + numericString;
         return nv(numericString);
     }
     const docSchema = NormalizedSchema.of(15);
@@ -21367,6 +21458,8 @@ function readMapIndefinite(ns) {
                 if (isUnion) {
                     let resultEmpty = true;
                     for (const _ in result) {
+                        if (!hasOwn(result, _))
+                            continue;
                         resultEmpty = false;
                         break;
                     }
@@ -21671,6 +21764,8 @@ function transformObject(ns, value) {
     if (ns.isMapSchema()) {
         const targetSchema = ns.getValueSchema();
         for (const key in value) {
+            if (!hasOwn(value, key))
+                continue;
             newObject[key] = transformObject(targetSchema, value[key]);
         }
     }
@@ -21680,6 +21775,8 @@ function transformObject(ns, value) {
         if (isUnion) {
             keys = new Set();
             for (const k in value) {
+                if (!hasOwn(value, k))
+                    continue;
                 if (k !== "__type") {
                     keys.add(k);
                 }
@@ -21696,6 +21793,8 @@ function transformObject(ns, value) {
         if (isUnion && keys?.size === 1) {
             let newObjectEmpty = true;
             for (const _ in newObject) {
+                if (!hasOwn(newObject, _))
+                    continue;
                 newObjectEmpty = false;
                 break;
             }
@@ -21706,6 +21805,8 @@ function transformObject(ns, value) {
         }
         else if (typeof value.__type === "string") {
             for (const k in value) {
+                if (!hasOwn(value, k))
+                    continue;
                 if (!(k in newObject)) {
                     newObject[k] = value[k];
                 }
@@ -21757,10 +21858,9 @@ class SmithyRpcV2CborProtocol extends RpcProtocol {
                 this.serializer.write(15, {});
                 request.body = this.serializer.flush();
             }
-            try {
+            if (request.body instanceof Uint8Array) {
                 request.headers["content-length"] = String(request.body.byteLength);
             }
-            catch (ignored) { }
         }
         const { service, operation } = getSmithyContext(context);
         const path = `/service/${service}/operation/${operation}`;
@@ -21776,37 +21876,37 @@ class SmithyRpcV2CborProtocol extends RpcProtocol {
         return super.deserializeResponse(operationSchema, context, response);
     }
     async handleError(operationSchema, context, response, dataObject, metadata) {
-        const errorName = loadSmithyRpcV2CborErrorCode(response, dataObject) ?? "Unknown";
+        const errorIdentifier = loadSmithyRpcV2CborErrorCode(response, dataObject) ?? "Unknown";
+        const preferredNamespaces = ["*"];
+        const { defaultNamespace } = this.options;
+        preferredNamespaces.unshift(defaultNamespace);
+        const [namespace, errorShapeName] = (() => {
+            if (errorIdentifier.includes("#")) {
+                return errorIdentifier.split("#");
+            }
+            return [undefined, errorIdentifier];
+        })();
+        if (namespace) {
+            preferredNamespaces.unshift(namespace);
+        }
         const errorMetadata = {
             $metadata: metadata,
-            $fault: response.statusCode <= 500 ? "client" : "server",
+            $fault: response.statusCode < 500 ? "client" : "server",
         };
-        let namespace = this.options.defaultNamespace;
-        if (errorName.includes("#")) {
-            [namespace] = errorName.split("#");
+        const preferredRegistries = [this.compositeErrorRegistry];
+        if (namespace) {
+            preferredRegistries.push(TypeRegistry.for(namespace));
         }
-        const registry = this.compositeErrorRegistry;
-        const nsRegistry = TypeRegistry.for(namespace);
-        registry.copyFrom(nsRegistry);
-        let errorSchema;
-        try {
-            errorSchema = registry.getSchema(errorName);
-        }
-        catch (ignored) {
+        preferredRegistries.push(TypeRegistry.for(defaultNamespace));
+        const [errorSchema, ErrorCtor, errorMode] = this.resolveError(errorShapeName, preferredNamespaces, preferredRegistries);
+        if (errorMode === "native" || errorMode === "synthetic") {
             if (dataObject.Message) {
                 dataObject.message = dataObject.Message;
             }
-            const syntheticRegistry = TypeRegistry.for("smithy.ts.sdk.synthetic." + namespace);
-            registry.copyFrom(syntheticRegistry);
-            const baseExceptionSchema = registry.getBaseException();
-            if (baseExceptionSchema) {
-                const ErrorCtor = registry.getErrorCtor(baseExceptionSchema);
-                throw Object.assign(new ErrorCtor({ name: errorName }), errorMetadata, dataObject);
-            }
-            throw Object.assign(new Error(errorName), errorMetadata, dataObject);
+            const error = errorMode === "synthetic" ? new ErrorCtor({ name: errorShapeName }) : new Error(errorShapeName);
+            throw Object.assign(error, errorMetadata, dataObject);
         }
         const ns = NormalizedSchema.of(errorSchema);
-        const ErrorCtor = registry.getErrorCtor(errorSchema);
         const message = dataObject.message ?? dataObject.Message ?? "Unknown";
         const exception = new ErrorCtor({});
         const output = {};
@@ -21869,6 +21969,8 @@ class CborShapeSerializer extends SerdeContext {
             if (ns.isMapSchema()) {
                 const sparse = !!ns.getMergedTraits().sparse;
                 for (const key in sourceObject) {
+                    if (!hasOwn(sourceObject, key))
+                        continue;
                     const value = this.serialize(ns.getValueSchema(), sourceObject[key]);
                     if (value != null || sparse) {
                         newObject[key] = value;
@@ -21889,6 +21991,8 @@ class CborShapeSerializer extends SerdeContext {
                 }
                 else if (typeof sourceObject.__type === "string") {
                     for (const k in sourceObject) {
+                        if (!hasOwn(sourceObject, k))
+                            continue;
                         if (!(k in newObject)) {
                             newObject[k] = this.serialize(15, sourceObject[k]);
                         }
@@ -21905,6 +22009,8 @@ class CborShapeSerializer extends SerdeContext {
                     return newArray;
                 }
                 for (const key in sourceObject) {
+                    if (!hasOwn(sourceObject, key))
+                        continue;
                     newObject[key] = this.serialize(ns.getValueSchema(), sourceObject[key]);
                 }
             }
@@ -21979,6 +22085,8 @@ class CborShapeDeserializer extends SerdeContext {
             if (ns.isMapSchema()) {
                 const targetSchema = ns.getValueSchema();
                 for (const key in value) {
+                    if (!hasOwn(value, key))
+                        continue;
                     const itemValue = this.readValue(targetSchema, value[key]);
                     newObject[key] = itemValue;
                 }
@@ -21989,6 +22097,8 @@ class CborShapeDeserializer extends SerdeContext {
                 if (isUnion) {
                     keys = new Set();
                     for (const k in value) {
+                        if (!hasOwn(value, k))
+                            continue;
                         if (k !== "__type") {
                             keys.add(k);
                         }
@@ -22005,6 +22115,8 @@ class CborShapeDeserializer extends SerdeContext {
                 if (isUnion && keys?.size === 1) {
                     let newObjectEmpty = true;
                     for (const _ in newObject) {
+                        if (!hasOwn(newObject, _))
+                            continue;
                         newObjectEmpty = false;
                         break;
                     }
@@ -22015,6 +22127,8 @@ class CborShapeDeserializer extends SerdeContext {
                 }
                 else if (typeof value.__type === "string") {
                     for (const k in value) {
+                        if (!hasOwn(value, k))
+                            continue;
                         if (!(k in newObject)) {
                             newObject[k] = value[k];
                         }
@@ -22638,6 +22752,7 @@ exports.readableStreamHasher = readableStreamHasher;
 /***/ 2658:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
+const { hasOwn } = __nccwpck_require__(4534);
 const { getSmithyContext, normalizeProvider } = __nccwpck_require__(4534);
 exports.getSmithyContext = getSmithyContext;
 exports.normalizeProvider = normalizeProvider;
@@ -23229,20 +23344,27 @@ class Command {
         }
         const stack = clientStack.concat(this.middlewareStack);
         const { logger } = configuration;
+        const additionalSmithyContext = additionalContext[SMITHY_CONTEXT_KEY];
         const handlerExecutionContext = {
             logger,
             clientName,
             commandName,
             inputFilterSensitiveLog,
             outputFilterSensitiveLog,
+            ...additionalContext,
             [SMITHY_CONTEXT_KEY]: {
+                ...additionalSmithyContext,
                 commandInstance: this,
                 ...smithyContext,
+                ...(options?.metricsRecorder === undefined ? {} : { metricsRecorder: options.metricsRecorder }),
             },
-            ...additionalContext,
         };
         const { requestHandler } = configuration;
         let requestOptions = options ?? {};
+        if (requestOptions.metricsRecorder) {
+            requestOptions = { ...requestOptions };
+            delete requestOptions.metricsRecorder;
+        }
         if (smithyContext.eventStream) {
             requestOptions = {
                 isEventStream: true,
@@ -23425,10 +23547,25 @@ class ServiceException extends Error {
             return ServiceException.isInstance(instance);
         }
         if (ServiceException.isInstance(instance)) {
-            if (candidate.name && this.name) {
-                return this.prototype.isPrototypeOf(instance) || candidate.name === this.name;
+            if (this.prototype.isPrototypeOf(instance)) {
+                return true;
             }
-            return this.prototype.isPrototypeOf(instance);
+            const targetName = this.name;
+            if (!targetName || !candidate.name) {
+                return false;
+            }
+            if (candidate.name === targetName) {
+                return true;
+            }
+            let proto = Object.getPrototypeOf(candidate);
+            while (proto && proto !== Object.prototype) {
+                const ctorName = proto.constructor?.name;
+                if (ctorName && ctorName !== "Error" && ctorName === targetName) {
+                    return true;
+                }
+                proto = Object.getPrototypeOf(proto);
+            }
+            return false;
         }
         return false;
     }
@@ -23507,6 +23644,8 @@ const knownAlgorithms = Object.values(AlgorithmId);
 const getChecksumConfiguration = (runtimeConfig) => {
     const checksumAlgorithms = [];
     for (const id in AlgorithmId) {
+        if (!hasOwn(AlgorithmId, id))
+            continue;
         const algorithmId = AlgorithmId[id];
         if (runtimeConfig[algorithmId] === undefined) {
             continue;
@@ -23580,7 +23719,9 @@ const getArrayIfSingleItem = (mayBeArray) => Array.isArray(mayBeArray) ? mayBeAr
 const getValueFromTextNode = (obj) => {
     const textNodeName = "#text";
     for (const key in obj) {
-        if (Object.prototype.hasOwnProperty.call(obj, key) && obj[key][textNodeName] !== undefined) {
+        if (!hasOwn(obj, key))
+            continue;
+        if (obj[key][textNodeName] !== undefined) {
             obj[key] = obj[key][textNodeName];
         }
         else if (typeof obj[key] === "object" && obj[key] !== null) {
@@ -23621,7 +23762,9 @@ function map(arg0, arg1, arg2) {
             instructions = arg1;
         }
     }
-    for (const key of Object.keys(instructions)) {
+    for (const key in instructions) {
+        if (!hasOwn(instructions, key))
+            continue;
         if (!Array.isArray(instructions[key])) {
             target[key] = instructions[key];
             continue;
@@ -23640,6 +23783,8 @@ const convertMap = (target) => {
 const take = (source, instructions) => {
     const out = {};
     for (const key in instructions) {
+        if (!hasOwn(instructions, key))
+            continue;
         applyInstruction(out, source, instructions, key);
     }
     return out;
@@ -23719,7 +23864,9 @@ const _json = (obj) => {
     }
     if (typeof obj === "object") {
         const target = {};
-        for (const key of Object.keys(obj)) {
+        for (const key in obj) {
+            if (!hasOwn(obj, key))
+                continue;
             if (obj[key] == null) {
                 continue;
             }
@@ -24577,7 +24724,7 @@ exports.resolveRegionConfig = resolveRegionConfig;
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 const { CONFIG_PREFIX_SEPARATOR, booleanSelector, SelectorType, loadConfig } = __nccwpck_require__(7291);
-const { toEndpointV1, getSmithyContext, normalizeProvider, isValidHostLabel } = __nccwpck_require__(4534);
+const { toEndpointV1, getSmithyContext, normalizeProvider, isValidHostLabel, hasOwn } = __nccwpck_require__(4534);
 exports.isValidHostLabel = isValidHostLabel;
 exports.middlewareEndpointToEndpointV1 = toEndpointV1;
 exports.toEndpointV1 = toEndpointV1;
@@ -25408,6 +25555,8 @@ const resolveEndpoint = (ruleSetObject, options) => {
     const { parameters, rules } = ruleSetObject;
     options.logger?.debug?.(`${debugId} Initial EndpointParams: ${toDebugString(endpointParams)}`);
     for (const paramKey in parameters) {
+        if (!hasOwn(parameters, paramKey))
+            continue;
         const parameter = parameters[paramKey];
         const endpointParam = endpointParams[paramKey];
         if (endpointParam == null && parameter.default != null) {
@@ -25460,6 +25609,7 @@ exports.resolveParams = resolveParams;
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 const { Crc32 } = __nccwpck_require__(9542);
+const { hasOwn } = __nccwpck_require__(4534);
 const { toHex, fromHex, toUtf8, fromUtf8 } = __nccwpck_require__(2430);
 const { Readable } = __nccwpck_require__(7075);
 const { TypeRegistry } = __nccwpck_require__(6890);
@@ -25517,7 +25667,9 @@ class HeaderMarshaller {
     }
     format(headers) {
         const chunks = [];
-        for (const headerName of Object.keys(headers)) {
+        for (const headerName in headers) {
+            if (!hasOwn(headers, headerName))
+                continue;
             const bytes = this.fromUtf8(headerName);
             chunks.push(Uint8Array.from([bytes.byteLength]), bytes, this.formatHeaderValue(headers[headerName]));
         }
@@ -25532,27 +25684,27 @@ class HeaderMarshaller {
     formatHeaderValue(header) {
         switch (header.type) {
             case "boolean":
-                return Uint8Array.from([header.value ? HEADER_VALUE_TYPE.boolTrue : HEADER_VALUE_TYPE.boolFalse]);
+                return Uint8Array.from([header.value ? 0 : 1]);
             case "byte":
-                return Uint8Array.from([HEADER_VALUE_TYPE.byte, header.value]);
+                return Uint8Array.from([2, header.value]);
             case "short":
                 const shortView = new DataView(new ArrayBuffer(3));
-                shortView.setUint8(0, HEADER_VALUE_TYPE.short);
+                shortView.setUint8(0, 3);
                 shortView.setInt16(1, header.value, false);
                 return new Uint8Array(shortView.buffer);
             case "integer":
                 const intView = new DataView(new ArrayBuffer(5));
-                intView.setUint8(0, HEADER_VALUE_TYPE.integer);
+                intView.setUint8(0, 4);
                 intView.setInt32(1, header.value, false);
                 return new Uint8Array(intView.buffer);
             case "long":
                 const longBytes = new Uint8Array(9);
-                longBytes[0] = HEADER_VALUE_TYPE.long;
+                longBytes[0] = 5;
                 longBytes.set(header.value.bytes, 1);
                 return longBytes;
             case "binary":
                 const binView = new DataView(new ArrayBuffer(3 + header.value.byteLength));
-                binView.setUint8(0, HEADER_VALUE_TYPE.byteArray);
+                binView.setUint8(0, 6);
                 binView.setUint16(1, header.value.byteLength, false);
                 const binBytes = new Uint8Array(binView.buffer);
                 binBytes.set(header.value, 3);
@@ -25560,14 +25712,14 @@ class HeaderMarshaller {
             case "string":
                 const utf8Bytes = this.fromUtf8(header.value);
                 const strView = new DataView(new ArrayBuffer(3 + utf8Bytes.byteLength));
-                strView.setUint8(0, HEADER_VALUE_TYPE.string);
+                strView.setUint8(0, 7);
                 strView.setUint16(1, utf8Bytes.byteLength, false);
                 const strBytes = new Uint8Array(strView.buffer);
                 strBytes.set(utf8Bytes, 3);
                 return strBytes;
             case "timestamp":
                 const tsBytes = new Uint8Array(9);
-                tsBytes[0] = HEADER_VALUE_TYPE.timestamp;
+                tsBytes[0] = 8;
                 tsBytes.set(Int64.fromNumber(header.value.valueOf()).bytes, 1);
                 return tsBytes;
             case "uuid":
@@ -25575,7 +25727,7 @@ class HeaderMarshaller {
                     throw new Error(`Invalid UUID received: ${header.value}`);
                 }
                 const uuidBytes = new Uint8Array(17);
-                uuidBytes[0] = HEADER_VALUE_TYPE.uuid;
+                uuidBytes[0] = 9;
                 uuidBytes.set(fromHex(header.value.replace(/-/g, "")), 1);
                 return uuidBytes;
         }
@@ -25588,46 +25740,46 @@ class HeaderMarshaller {
             const name = this.toUtf8(new Uint8Array(headers.buffer, headers.byteOffset + position, nameLength));
             position += nameLength;
             switch (headers.getUint8(position++)) {
-                case HEADER_VALUE_TYPE.boolTrue:
+                case 0:
                     out[name] = {
                         type: BOOLEAN_TAG,
                         value: true,
                     };
                     break;
-                case HEADER_VALUE_TYPE.boolFalse:
+                case 1:
                     out[name] = {
                         type: BOOLEAN_TAG,
                         value: false,
                     };
                     break;
-                case HEADER_VALUE_TYPE.byte:
+                case 2:
                     out[name] = {
                         type: BYTE_TAG,
                         value: headers.getInt8(position++),
                     };
                     break;
-                case HEADER_VALUE_TYPE.short:
+                case 3:
                     out[name] = {
                         type: SHORT_TAG,
                         value: headers.getInt16(position, false),
                     };
                     position += 2;
                     break;
-                case HEADER_VALUE_TYPE.integer:
+                case 4:
                     out[name] = {
                         type: INT_TAG,
                         value: headers.getInt32(position, false),
                     };
                     position += 4;
                     break;
-                case HEADER_VALUE_TYPE.long:
+                case 5:
                     out[name] = {
                         type: LONG_TAG,
                         value: new Int64(new Uint8Array(headers.buffer, headers.byteOffset + position, 8)),
                     };
                     position += 8;
                     break;
-                case HEADER_VALUE_TYPE.byteArray:
+                case 6:
                     const binaryLength = headers.getUint16(position, false);
                     position += 2;
                     out[name] = {
@@ -25636,7 +25788,7 @@ class HeaderMarshaller {
                     };
                     position += binaryLength;
                     break;
-                case HEADER_VALUE_TYPE.string:
+                case 7:
                     const stringLength = headers.getUint16(position, false);
                     position += 2;
                     out[name] = {
@@ -25645,14 +25797,14 @@ class HeaderMarshaller {
                     };
                     position += stringLength;
                     break;
-                case HEADER_VALUE_TYPE.timestamp:
+                case 8:
                     out[name] = {
                         type: TIMESTAMP_TAG,
                         value: new Date(new Int64(new Uint8Array(headers.buffer, headers.byteOffset + position, 8)).valueOf()),
                     };
                     position += 8;
                     break;
-                case HEADER_VALUE_TYPE.uuid:
+                case 9:
                     const uuidBytes = new Uint8Array(headers.buffer, headers.byteOffset + position, 16);
                     position += 16;
                     out[name] = {
@@ -26087,7 +26239,7 @@ class EventStreamSerde {
         this.defaultContentType = defaultContentType;
         this.compositeErrorRegistry = compositeErrorRegistry;
     }
-    async serializeEventStream({ eventStream, requestSchema, initialRequest, }) {
+    async serializeEventStream({ eventStream, requestSchema, initialRequest, initialMessageType, }) {
         const marshaller = this.marshaller;
         const eventStreamMember = requestSchema.getEventStreamMember();
         const unionSchema = requestSchema.getMemberSchema(eventStreamMember);
@@ -26098,7 +26250,7 @@ class EventStreamSerde {
             async *[Symbol.asyncIterator]() {
                 if (initialRequest) {
                     const headers = {
-                        ":event-type": { type: "string", value: "initial-request" },
+                        ":event-type": { type: "string", value: initialMessageType ?? "initial-request" },
                         ":message-type": { type: "string", value: "event" },
                         ":content-type": { type: "string", value: defaultContentType },
                     };
@@ -26124,6 +26276,8 @@ class EventStreamSerde {
             }
             let unionMember = "";
             for (const key in event) {
+                if (!hasOwn(event, key))
+                    continue;
                 if (key !== "__type") {
                     unionMember = key;
                     break;
@@ -26142,7 +26296,7 @@ class EventStreamSerde {
             };
         });
     }
-    async deserializeEventStream({ response, responseSchema, initialResponseContainer, }) {
+    async deserializeEventStream({ response, responseSchema, initialResponseContainer, initialMessageType, }) {
         const marshaller = this.marshaller;
         const eventStreamMember = responseSchema.getEventStreamMember();
         const unionSchema = responseSchema.getMemberSchema(eventStreamMember);
@@ -26151,13 +26305,15 @@ class EventStreamSerde {
         const asyncIterable = marshaller.deserialize(response.body, async (event) => {
             let unionMember = "";
             for (const key in event) {
+                if (!hasOwn(event, key))
+                    continue;
                 if (key !== "__type") {
                     unionMember = key;
                     break;
                 }
             }
             const body = event[unionMember].body;
-            if (unionMember === "initial-response") {
+            if (unionMember === (initialMessageType ?? "initial-response")) {
                 const dataObject = await this.deserializer.read(responseSchema, body);
                 delete dataObject[eventStreamMember];
                 return {
@@ -26225,6 +26381,8 @@ class EventStreamSerde {
                 throw new Error("@smithy::core/protocols - initial-response event encountered in event stream but no response schema given.");
             }
             for (const key in firstEvent.value) {
+                if (!hasOwn(firstEvent.value, key))
+                    continue;
                 initialResponseContainer[key] = firstEvent.value[key];
             }
         }
@@ -26382,14 +26540,14 @@ exports.universalEventStreamSerdeProvider = eventStreamSerdeProvider$1;
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 const { Uint8ArrayBlobAdapter, sdkStreamMixin, splitEvery, splitHeader, fromBase64, _parseEpochTimestamp, _parseRfc7231DateTime, _parseRfc3339DateTimeWithOffset, LazyJsonString, NumericValue, toUtf8, fromUtf8, generateIdempotencyToken, toBase64, dateToUtcString, quoteHeader } = __nccwpck_require__(2430);
-const { TypeRegistry, NormalizedSchema, translateTraits } = __nccwpck_require__(6890);
-const { HttpRequest, HttpResponse, isValidHostname } = __nccwpck_require__(4534);
+const { HttpRequest, HttpResponse, hasOwn, isValidHostname } = __nccwpck_require__(4534);
 const { parseQueryString, parseUrl } = __nccwpck_require__(4534);
 exports.HttpRequest = HttpRequest;
 exports.HttpResponse = HttpResponse;
 exports.isValidHostname = isValidHostname;
 exports.parseQueryString = parseQueryString;
 exports.parseUrl = parseUrl;
+const { TypeRegistry, NormalizedSchema, translateTraits } = __nccwpck_require__(6890);
 const { FieldPosition } = __nccwpck_require__(690);
 
 const collectBody = async (streamBody = new Uint8Array(), context) => {
@@ -26422,7 +26580,7 @@ class HttpProtocol extends SerdeContext {
     constructor(options) {
         super();
         this.options = options;
-        this.compositeErrorRegistry = TypeRegistry.for(options.defaultNamespace);
+        this.compositeErrorRegistry = new TypeRegistry(options.defaultNamespace);
         for (const etr of options.errorTypeRegistries ?? []) {
             this.compositeErrorRegistry.copyFrom(etr);
         }
@@ -26458,6 +26616,8 @@ class HttpProtocol extends SerdeContext {
             }
             if (endpoint.headers) {
                 for (const name in endpoint.headers) {
+                    if (!hasOwn(endpoint.headers, name))
+                        continue;
                     request.headers[name] = endpoint.headers[name].join(", ");
                 }
             }
@@ -26473,6 +26633,8 @@ class HttpProtocol extends SerdeContext {
             };
             if (endpoint.headers) {
                 for (const name in endpoint.headers) {
+                    if (!hasOwn(endpoint.headers, name))
+                        continue;
                     request.headers[name] = endpoint.headers[name];
                 }
             }
@@ -26513,6 +26675,47 @@ class HttpProtocol extends SerdeContext {
             cfId: output.headers["x-amz-cf-id"],
         };
     }
+    resolveError(name, namespaces, registries) {
+        const defaultErrorSchema = [-3, "", "Error", 0, [], [], 0];
+        let schema;
+        for (const registry of registries) {
+            for (const ns of namespaces) {
+                try {
+                    if (ns === "*") {
+                        schema = registry.getSchema(name);
+                    }
+                    else {
+                        schema = registry.getSchema(ns + "#" + name);
+                    }
+                    const errorCtor = registry.getErrorCtor(schema);
+                    if (errorCtor) {
+                        return [schema, errorCtor, "modeled"];
+                    }
+                    else {
+                        const syntheticErrorSchema = registry.getBaseException();
+                        if (syntheticErrorSchema) {
+                            const syntheticErrorCtor = registry.getErrorCtor(syntheticErrorSchema);
+                            if (syntheticErrorCtor) {
+                                return [schema, syntheticErrorCtor, "synthetic"];
+                            }
+                        }
+                    }
+                }
+                catch (ignored) {
+                }
+            }
+        }
+        for (const registry of registries) {
+            const syntheticErrorSchema = registry.getBaseException();
+            if (syntheticErrorSchema) {
+                const syntheticErrorCtor = registry.getErrorCtor(syntheticErrorSchema);
+                if (syntheticErrorCtor) {
+                    return [syntheticErrorSchema, syntheticErrorCtor, "synthetic"];
+                }
+            }
+        }
+        return [defaultErrorSchema, Error, "native"];
+    }
     async serializeEventStream({ eventStream, requestSchema, initialRequest, }) {
         const eventStreamSerde = await this.loadEventStreamCapability();
         return eventStreamSerde.serializeEventStream({
@@ -26541,13 +26744,6 @@ class HttpProtocol extends SerdeContext {
             compositeErrorRegistry: this.compositeErrorRegistry,
         });
     }
-    resolveEventStreamMarshaller(importedProvider) {
-        const context = this.serdeContext;
-        if (context.eventStreamMarshaller) {
-            return context.eventStreamMarshaller;
-        }
-        return importedProvider(this.serdeContext);
-    }
     getDefaultContentType() {
         throw new Error(`@smithy/core/protocols - ${this.constructor.name} getDefaultContentType() implementation missing.`);
     }
@@ -26560,6 +26756,13 @@ class HttpProtocol extends SerdeContext {
             throw new Error("@smithy/core - HttpProtocol: eventStreamMarshaller missing in serdeContext.");
         }
         return context.eventStreamMarshaller;
+    }
+    resolveEventStreamMarshaller(importedProvider) {
+        const context = this.serdeContext;
+        if (context.eventStreamMarshaller) {
+            return context.eventStreamMarshaller;
+        }
+        return importedProvider(this.serdeContext);
     }
 }
 
@@ -26652,6 +26855,8 @@ class HttpBindingProtocol extends HttpProtocol {
             }
             else if (typeof memberTraits.httpPrefixHeaders === "string") {
                 for (const key in inputMemberValue) {
+                    if (!hasOwn(inputMemberValue, key))
+                        continue;
                     const val = inputMemberValue[key];
                     const amalgam = memberTraits.httpPrefixHeaders + key;
                     serializer.write([memberNs.getValueSchema(), { httpHeader: amalgam }], val);
@@ -26698,6 +26903,8 @@ class HttpBindingProtocol extends HttpProtocol {
         const traits = ns.getMergedTraits();
         if (traits.httpQueryParams) {
             for (const key in data) {
+                if (!hasOwn(data, key))
+                    continue;
                 if (!(key in query)) {
                     const val = data[key];
                     const valueSchema = ns.getValueSchema();
@@ -26741,6 +26948,8 @@ class HttpBindingProtocol extends HttpProtocol {
             throw new Error("@smithy/core/protocols - HTTP Protocol error handler failed to throw.");
         }
         for (const header in response.headers) {
+            if (!hasOwn(response.headers, header))
+                continue;
             const value = response.headers[header];
             delete response.headers[header];
             response.headers[header.toLowerCase()] = value;
@@ -26828,6 +27037,8 @@ class HttpBindingProtocol extends HttpProtocol {
             else if (memberTraits.httpPrefixHeaders !== undefined) {
                 dataObject[memberName] = {};
                 for (const header in response.headers) {
+                    if (!hasOwn(response.headers, header))
+                        continue;
                     if (header.startsWith(memberTraits.httpPrefixHeaders)) {
                         const value = response.headers[header];
                         const valueSchema = memberSchema.getValueSchema();
@@ -26877,10 +27088,9 @@ class RpcProtocol extends HttpProtocol {
             if (eventStreamMember) {
                 if (input[eventStreamMember]) {
                     const initialRequest = {};
-                    for (const [memberName, memberSchema] of ns.structIterator()) {
-                        if (memberName !== eventStreamMember && input[memberName]) {
-                            serializer.write(memberSchema, input[memberName]);
-                            initialRequest[memberName] = serializer.flush();
+                    for (const [memberName] of ns.structIterator()) {
+                        if (memberName !== eventStreamMember && input[memberName] != null) {
+                            initialRequest[memberName] = input[memberName];
                         }
                     }
                     payload = await this.serializeEventStream({
@@ -26914,6 +27124,8 @@ class RpcProtocol extends HttpProtocol {
             throw new Error("@smithy/core/protocols - RPC Protocol error handler failed to throw.");
         }
         for (const header in response.headers) {
+            if (!hasOwn(response.headers, header))
+                continue;
             const value = response.headers[header];
             delete response.headers[header];
             response.headers[header.toLowerCase()] = value;
@@ -27311,24 +27523,27 @@ class Fields {
 }
 
 const getHttpHandlerExtensionConfiguration = (runtimeConfig) => {
+    if (runtimeConfig.logger && runtimeConfig.logger.constructor?.name !== "NoOpLogger") {
+        runtimeConfig.requestHandler?.updateHttpClientConfig?.(Symbol.for("logger"), runtimeConfig.logger);
+    }
     return {
         setHttpHandler(handler) {
-            runtimeConfig.httpHandler = handler;
+            runtimeConfig.requestHandler = handler;
         },
         httpHandler() {
-            return runtimeConfig.httpHandler;
+            return runtimeConfig.requestHandler;
         },
         updateHttpClientConfig(key, value) {
-            runtimeConfig.httpHandler?.updateHttpClientConfig(key, value);
+            runtimeConfig.requestHandler?.updateHttpClientConfig(key, value);
         },
         httpHandlerConfigs() {
-            return runtimeConfig.httpHandler.httpHandlerConfigs();
+            return runtimeConfig.requestHandler.httpHandlerConfigs();
         },
     };
 };
 const resolveHttpHandlerRuntimeConfig = (httpHandlerExtensionConfiguration) => {
     return {
-        httpHandler: httpHandlerExtensionConfiguration.httpHandler(),
+        requestHandler: httpHandlerExtensionConfiguration.httpHandler(),
     };
 };
 
@@ -27344,10 +27559,12 @@ function contentLengthMiddleware(bodyLengthChecker) {
                     .indexOf(CONTENT_LENGTH_HEADER) === -1) {
                 try {
                     const length = bodyLengthChecker(body);
-                    request.headers = {
-                        ...request.headers,
-                        [CONTENT_LENGTH_HEADER]: String(length),
-                    };
+                    if (length != null) {
+                        request.headers = {
+                            ...request.headers,
+                            [CONTENT_LENGTH_HEADER]: String(length),
+                        };
+                    }
                 }
                 catch (ignored) {
                 }
@@ -27432,6 +27649,7 @@ const { Readable } = __nccwpck_require__(7075);
 const { NoOpLogger, normalizeProvider } = __nccwpck_require__(2658);
 const { HttpResponse, HttpRequest } = __nccwpck_require__(3422);
 const { parseRfc7231DateTime, v4 } = __nccwpck_require__(2430);
+const { hasOwn } = __nccwpck_require__(4534);
 
 const isStreamingPayload = (request) => request?.body instanceof Readable ||
     (typeof ReadableStream !== "undefined" && request?.body instanceof ReadableStream);
@@ -27486,16 +27704,17 @@ const isBrowserNetworkError = (error) => {
 const isThrottlingError = (error) => error.$metadata?.httpStatusCode === 429 ||
     THROTTLING_ERROR_CODES.includes(error.name) ||
     error.$retryable?.throttling == true;
-const isTransientError = (error, depth = 0) => isRetryableByTrait(error) ||
-    isClockSkewCorrectedError(error) ||
-    (error.name === "InvalidSignatureException" && error.message?.includes("Signature expired")) ||
-    TRANSIENT_ERROR_CODES.includes(error.name) ||
-    NODEJS_TIMEOUT_ERROR_CODES.includes(error?.code || "") ||
-    NODEJS_NETWORK_ERROR_CODES.includes(error?.code || "") ||
-    TRANSIENT_ERROR_STATUS_CODES.includes(error.$metadata?.httpStatusCode || 0) ||
-    isBrowserNetworkError(error) ||
-    isNodeJsHttp2TransientError(error) ||
-    (error.cause !== undefined && depth <= 10 && isTransientError(error.cause, depth + 1));
+const isTransientError = (error, depth = 0) => error?.name !== "AbortError" &&
+    (isRetryableByTrait(error) ||
+        isClockSkewCorrectedError(error) ||
+        (error.name === "InvalidSignatureException" && error.message?.includes("Signature expired")) ||
+        TRANSIENT_ERROR_CODES.includes(error.name) ||
+        NODEJS_TIMEOUT_ERROR_CODES.includes(error?.code || "") ||
+        NODEJS_NETWORK_ERROR_CODES.includes(error?.code || "") ||
+        TRANSIENT_ERROR_STATUS_CODES.includes(error.$metadata?.httpStatusCode || 0) ||
+        isBrowserNetworkError(error) ||
+        isNodeJsHttp2TransientError(error) ||
+        (error.cause !== undefined && depth <= 10 && isTransientError(error.cause, depth + 1)));
 const isServerError = (error) => {
     if (error.$metadata?.httpStatusCode !== undefined) {
         const statusCode = error.$metadata.httpStatusCode;
@@ -27524,7 +27743,9 @@ function parseRetryAfterHeader(response, logger) {
     if (!HttpResponse.isInstance(response)) {
         return;
     }
-    for (const header of Object.keys(response.headers)) {
+    for (const header in response.headers) {
+        if (!hasOwn(response.headers, header))
+            continue;
         const h = header.toLowerCase();
         if (h === "retry-after") {
             const retryAfter = response.headers[header];
@@ -28860,12 +29081,12 @@ class TypeRegistry {
         this.namespace = namespace;
         this.schemas = schemas;
         this.exceptions = exceptions;
+        if (!TypeRegistry.registries.has(namespace)) {
+            TypeRegistry.registries.set(namespace, this);
+        }
     }
     static for(namespace) {
-        if (!TypeRegistry.registries.has(namespace)) {
-            TypeRegistry.registries.set(namespace, new TypeRegistry(namespace));
-        }
-        return TypeRegistry.registries.get(namespace);
+        return TypeRegistry.registries.get(namespace) ?? new TypeRegistry(namespace);
     }
     copyFrom(other) {
         const { schemas, exceptions } = this;
@@ -28883,7 +29104,9 @@ class TypeRegistry {
     register(shapeId, schema) {
         const qualifiedName = this.normalizeShapeId(shapeId);
         for (const r of [this, TypeRegistry.for(qualifiedName.split("#")[0])]) {
-            r.schemas.set(qualifiedName, schema);
+            if (!r.schemas.has(qualifiedName)) {
+                r.schemas.set(qualifiedName, schema);
+            }
         }
     }
     getSchema(shapeId) {
@@ -28908,9 +29131,12 @@ class TypeRegistry {
     registerError(es, ctor) {
         const $error = es;
         const ns = $error[1];
+        const qualifiedName = ns + "#" + $error[2];
         for (const r of [this, TypeRegistry.for(ns)]) {
-            r.schemas.set(ns + "#" + $error[2], $error);
-            r.exceptions.set($error, ctor);
+            if (!r.schemas.has(qualifiedName) && !r.exceptions.has($error)) {
+                r.schemas.set(qualifiedName, $error);
+                r.exceptions.set($error, ctor);
+            }
         }
     }
     getErrorCtor(es) {
@@ -28988,8 +29214,9 @@ exports.translateTraits = translateTraits;
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 const { createHmac, createHash, getRandomValues } = __nccwpck_require__(7598);
+const { hasOwn, HttpResponse } = __nccwpck_require__(4534);
+exports.hasOwn = hasOwn;
 const { ReadStream, lstatSync, fstatSync } = __nccwpck_require__(3024);
-const { HttpResponse } = __nccwpck_require__(4534);
 const { toEndpointV1 } = __nccwpck_require__(2085);
 const { Readable, Writable, PassThrough } = __nccwpck_require__(7075);
 
@@ -29248,6 +29475,8 @@ const expectUnion = (value) => {
     const asObject = expectObject(value);
     const setKeys = [];
     for (const k in asObject) {
+        if (!hasOwn(asObject, k))
+            continue;
         if (asObject[k] != null) {
             setKeys.push(k);
         }
@@ -30338,6 +30567,8 @@ const getAwsChunkedEncodingStream$1 = (readableStream, options) => {
         checksumLocationName !== undefined &&
         streamHasher !== undefined;
     const digest = checksumRequired ? streamHasher(checksumAlgorithmFn, readableStream) : undefined;
+    Promise.resolve(digest).catch(() => {
+    });
     const reader = readableStream.getReader();
     return new ReadableStream({
         async pull(controller) {
@@ -30370,8 +30601,12 @@ function getAwsChunkedEncodingStream(stream, options) {
         checksumLocationName !== undefined &&
         streamHasher !== undefined;
     const digest = checksumRequired ? streamHasher(checksumAlgorithmFn, readable) : undefined;
+    Promise.resolve(digest).catch(() => {
+    });
     const awsChunkedEncodingStream = new Readable({
-        read: () => { },
+        read() {
+            readable.resume();
+        },
     });
     readable.on("data", (data) => {
         const length = bodyLengthChecker(data) || 0;
@@ -30380,16 +30615,27 @@ function getAwsChunkedEncodingStream(stream, options) {
         }
         awsChunkedEncodingStream.push(`${length.toString(16)}\r\n`);
         awsChunkedEncodingStream.push(data);
-        awsChunkedEncodingStream.push("\r\n");
-    });
-    readable.on("end", async () => {
-        awsChunkedEncodingStream.push(`0\r\n`);
-        if (checksumRequired) {
-            const checksum = base64Encoder(await digest);
-            awsChunkedEncodingStream.push(`${checksumLocationName}:${checksum}\r\n`);
-            awsChunkedEncodingStream.push(`\r\n`);
+        if (!awsChunkedEncodingStream.push("\r\n")) {
+            readable.pause();
         }
-        awsChunkedEncodingStream.push(null);
+    });
+    readable.on("error", (err) => {
+        awsChunkedEncodingStream.destroy(err);
+    });
+    readable.pause();
+    readable.on("end", async () => {
+        try {
+            awsChunkedEncodingStream.push(`0\r\n`);
+            if (checksumRequired) {
+                const checksum = base64Encoder(await digest);
+                awsChunkedEncodingStream.push(`${checksumLocationName}:${checksum}\r\n`);
+                awsChunkedEncodingStream.push(`\r\n`);
+            }
+            awsChunkedEncodingStream.push(null);
+        }
+        catch (err) {
+            awsChunkedEncodingStream.destroy(err);
+        }
     });
     return awsChunkedEncodingStream;
 }
@@ -30743,6 +30989,10 @@ const { SMITHY_CONTEXT_KEY } = __nccwpck_require__(690);
 
 const getSmithyContext = (context) => context[SMITHY_CONTEXT_KEY] || (context[SMITHY_CONTEXT_KEY] = {});
 
+function hasOwn(o, k) {
+    return Object.prototype.hasOwnProperty.call(o, k);
+}
+
 class HttpRequest {
     method;
     protocol;
@@ -30902,6 +31152,8 @@ const toEndpointV1 = (endpoint) => {
             if (endpoint.headers) {
                 v1Endpoint.headers = {};
                 for (const name in endpoint.headers) {
+                    if (!hasOwn(endpoint.headers, name))
+                        continue;
                     v1Endpoint.headers[name.toLowerCase()] = endpoint.headers[name].join(", ");
                 }
             }
@@ -30915,6 +31167,7 @@ const toEndpointV1 = (endpoint) => {
 exports.HttpRequest = HttpRequest;
 exports.HttpResponse = HttpResponse;
 exports.getSmithyContext = getSmithyContext;
+exports.hasOwn = hasOwn;
 exports.isValidHostLabel = isValidHostLabel;
 exports.isValidHostname = isValidHostname;
 exports.normalizeProvider = normalizeProvider;
@@ -31305,12 +31558,13 @@ exports.providerConfigFromInit = providerConfigFromInit;
 /***/ 1279:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
+const { hasOwn } = __nccwpck_require__(2430);
+const { streamCollector } = __nccwpck_require__(2430);
+exports.streamCollector = streamCollector;
 const { buildQueryString, HttpResponse } = __nccwpck_require__(3422);
 const node_https = __nccwpck_require__(4708);
 const { Readable } = __nccwpck_require__(7075);
 const http2 = __nccwpck_require__(2467);
-const { streamCollector } = __nccwpck_require__(2430);
-exports.streamCollector = streamCollector;
 
 function buildAbortError(abortSignal) {
     const reason = abortSignal && typeof abortSignal === "object" && "reason" in abortSignal
@@ -31337,6 +31591,8 @@ const NODEJS_TIMEOUT_ERROR_CODES = ["ECONNRESET", "EPIPE", "ETIMEDOUT"];
 const getTransformedHeaders = (headers) => {
     const transformedHeaders = {};
     for (const name in headers) {
+        if (!hasOwn(headers, name))
+            continue;
         const headerValues = headers[name];
         transformedHeaders[name] = Array.isArray(headerValues) ? headerValues.join(",") : headerValues;
     }
@@ -31538,6 +31794,8 @@ class NodeHttpHandler {
         }
         if (sockets && requests) {
             for (const origin in sockets) {
+                if (!hasOwn(sockets, origin))
+                    continue;
                 const socketsInUse = sockets[origin]?.length ?? 0;
                 const requestsEnqueued = requests[origin]?.length ?? 0;
                 if (socketsInUse >= maxSockets && requestsEnqueued >= 2 * maxSockets) {
@@ -31573,6 +31831,7 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
             this.config = await this.configProvider;
         }
         const config = this.config;
+        const logger = config.logger;
         const isSSL = request.protocol === "https:";
         if (!isSSL && !this.config.httpAgent) {
             this.config.httpAgent = await this.config.httpAgentProvider();
@@ -31616,7 +31875,7 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
                 });
             }
             socketWarningTimeoutId = timing.setTimeout(() => {
-                this.socketWarningTimestamp = NodeHttpHandler.checkSocketUsage(agent, this.socketWarningTimestamp, config.logger);
+                this.socketWarningTimestamp = NodeHttpHandler.checkSocketUsage(agent, this.socketWarningTimestamp, logger);
             }, config.socketAcquisitionWarningTimeout ?? (config.requestTimeout ?? 2000) + (config.connectionTimeout ?? 1000));
             const queryString = request.query ? buildQueryString(request.query) : "";
             let auth = undefined;
@@ -31683,7 +31942,7 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
             }
             const effectiveRequestTimeout = requestTimeout ?? config.requestTimeout;
             connectionTimeoutId = setConnectionTimeout(req, reject, config.connectionTimeout);
-            requestTimeoutId = setRequestTimeout(req, reject, effectiveRequestTimeout, config.throwOnRequestTimeout, config.logger ?? console);
+            requestTimeoutId = setRequestTimeout(req, reject, effectiveRequestTimeout, config.throwOnRequestTimeout, logger ?? console);
             socketTimeoutId = setSocketTimeout(req, reject, config.socketTimeout);
             const httpAgent = nodeHttpsOptions.agent;
             if (typeof httpAgent === "object" && "keepAlive" in httpAgent) {
@@ -31701,6 +31960,12 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
     updateHttpClientConfig(key, value) {
         this.config = undefined;
         this.configProvider = this.configProvider.then((config) => {
+            if (key === Symbol.for("logger")) {
+                return {
+                    ...config,
+                    logger: config.logger ?? value,
+                };
+            }
             return {
                 ...config,
                 [key]: value,
@@ -31786,6 +32051,7 @@ class ClientHttp2SessionRef {
     destroy() {
         this.refs = 0;
         if (!this.session.destroyed) {
+            this.session.setTimeout(0);
             this.session.destroy();
         }
     }
@@ -31903,9 +32169,8 @@ class NodeHttp2ConnectionManager {
         session.on("error", ensureDestroyed);
         session.on("frameError", ensureDestroyed);
         session.on("close", ensureDestroyed);
-        if (connectionConfiguration.requestTimeout) {
-            session.setTimeout(connectionConfiguration.requestTimeout, ensureDestroyed);
-        }
+        const timeout = connectionConfiguration.requestTimeout ?? 300_000;
+        session.setTimeout(timeout, ensureDestroyed);
         ref.retain();
         return ref;
     }
@@ -32112,6 +32377,9 @@ class NodeHttp2Handler {
                 resolve({ response: httpResponse });
                 if (useIsolatedSession) {
                     session.close();
+                    clientHttp2Stream.on("end", () => {
+                        ref.destroy();
+                    });
                 }
             });
             clientHttp2Stream.on("close", () => {
@@ -32122,7 +32390,11 @@ class NodeHttp2Handler {
                     this.connectionManager.release(requestContext, ref);
                 }
                 if (!fulfilled) {
-                    rejectWithDestroy(new Error("Unexpected error: http2 request did not get a response"));
+                    const error = new Error("Unexpected error: http2 request did not get a response");
+                    if (session.destroyed) {
+                        error.name = "TimeoutError";
+                    }
+                    rejectWithDestroy(error);
                 }
             });
             writeRequestBodyPromise = writeRequestBody(clientHttp2Stream, request, effectiveRequestTimeout);
@@ -32152,14 +32424,16 @@ exports.NodeHttpHandler = NodeHttpHandler;
 /***/ 5118:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
-const { fromUtf8, fromHex, toHex, toUint8Array, isArrayBuffer } = __nccwpck_require__(2430);
+const { hasOwn, fromUtf8, fromHex, toHex, toUint8Array, isArrayBuffer } = __nccwpck_require__(2430);
 const { normalizeProvider } = __nccwpck_require__(2658);
 const { escapeUri, HttpRequest } = __nccwpck_require__(3422);
 
 class HeaderFormatter {
     format(headers) {
         const chunks = [];
-        for (const headerName of Object.keys(headers)) {
+        for (const headerName in headers) {
+            if (!hasOwn(headers, headerName))
+                continue;
             const bytes = fromUtf8(headerName);
             chunks.push(Uint8Array.from([bytes.byteLength]), bytes, this.formatHeaderValue(headers[headerName]));
         }
@@ -32174,27 +32448,27 @@ class HeaderFormatter {
     formatHeaderValue(header) {
         switch (header.type) {
             case "boolean":
-                return Uint8Array.from([header.value ? HEADER_VALUE_TYPE.boolTrue : HEADER_VALUE_TYPE.boolFalse]);
+                return Uint8Array.from([header.value ? 0 : 1]);
             case "byte":
-                return Uint8Array.from([HEADER_VALUE_TYPE.byte, header.value]);
+                return Uint8Array.from([2, header.value]);
             case "short":
                 const shortView = new DataView(new ArrayBuffer(3));
-                shortView.setUint8(0, HEADER_VALUE_TYPE.short);
+                shortView.setUint8(0, 3);
                 shortView.setInt16(1, header.value, false);
                 return new Uint8Array(shortView.buffer);
             case "integer":
                 const intView = new DataView(new ArrayBuffer(5));
-                intView.setUint8(0, HEADER_VALUE_TYPE.integer);
+                intView.setUint8(0, 4);
                 intView.setInt32(1, header.value, false);
                 return new Uint8Array(intView.buffer);
             case "long":
                 const longBytes = new Uint8Array(9);
-                longBytes[0] = HEADER_VALUE_TYPE.long;
+                longBytes[0] = 5;
                 longBytes.set(header.value.bytes, 1);
                 return longBytes;
             case "binary":
                 const binView = new DataView(new ArrayBuffer(3 + header.value.byteLength));
-                binView.setUint8(0, HEADER_VALUE_TYPE.byteArray);
+                binView.setUint8(0, 6);
                 binView.setUint16(1, header.value.byteLength, false);
                 const binBytes = new Uint8Array(binView.buffer);
                 binBytes.set(header.value, 3);
@@ -32202,14 +32476,14 @@ class HeaderFormatter {
             case "string":
                 const utf8Bytes = fromUtf8(header.value);
                 const strView = new DataView(new ArrayBuffer(3 + utf8Bytes.byteLength));
-                strView.setUint8(0, HEADER_VALUE_TYPE.string);
+                strView.setUint8(0, 7);
                 strView.setUint16(1, utf8Bytes.byteLength, false);
                 const strBytes = new Uint8Array(strView.buffer);
                 strBytes.set(utf8Bytes, 3);
                 return strBytes;
             case "timestamp":
                 const tsBytes = new Uint8Array(9);
-                tsBytes[0] = HEADER_VALUE_TYPE.timestamp;
+                tsBytes[0] = 8;
                 tsBytes.set(Int64.fromNumber(header.value.valueOf()).bytes, 1);
                 return tsBytes;
             case "uuid":
@@ -32217,7 +32491,7 @@ class HeaderFormatter {
                     throw new Error(`Invalid UUID received: ${header.value}`);
                 }
                 const uuidBytes = new Uint8Array(17);
-                uuidBytes[0] = HEADER_VALUE_TYPE.uuid;
+                uuidBytes[0] = 9;
                 uuidBytes.set(fromHex(header.value.replace(/-/g, "")), 1);
                 return uuidBytes;
         }
@@ -32328,7 +32602,9 @@ const MAX_PRESIGNED_TTL = 60 * 60 * 24 * 7;
 const getCanonicalQuery = ({ query = {} }) => {
     const keys = [];
     const serialized = {};
-    for (const key of Object.keys(query)) {
+    for (const key in query) {
+        if (!hasOwn(query, key))
+            continue;
         if (key.toLowerCase() === SIGNATURE_HEADER) {
             continue;
         }
@@ -32489,13 +32765,18 @@ const getCanonicalHeaders = ({ headers }, unsignableHeaders, signableHeaders) =>
                 continue;
             }
         }
-        canonical[canonicalHeaderName] = headers[headerName].trim().replace(/\s+/g, " ");
+        canonical[canonicalHeaderName] = headers[headerName]
+            .replace(/[\r\n]/g, " ")
+            .replace(/[ \t]+/g, " ")
+            .replace(/^ | $/g, "");
     }
     return canonical;
 };
 
 const getPayloadHash = async ({ headers, body }, hashConstructor) => {
-    for (const headerName of Object.keys(headers)) {
+    for (const headerName in headers) {
+        if (!hasOwn(headers, headerName))
+            continue;
         if (headerName.toLowerCase() === SHA256_HEADER) {
             return headers[headerName];
         }
@@ -32513,7 +32794,9 @@ const getPayloadHash = async ({ headers, body }, hashConstructor) => {
 
 const hasHeader = (soughtHeader, headers) => {
     soughtHeader = soughtHeader.toLowerCase();
-    for (const headerName of Object.keys(headers)) {
+    for (const headerName in headers) {
+        if (!hasOwn(headers, headerName))
+            continue;
         if (soughtHeader === headerName.toLowerCase()) {
             return true;
         }
@@ -32523,7 +32806,9 @@ const hasHeader = (soughtHeader, headers) => {
 
 const moveHeadersToQuery = (request, options = {}) => {
     const { headers, query = {} } = HttpRequest.clone(request);
-    for (const name of Object.keys(headers)) {
+    for (const name in headers) {
+        if (!hasOwn(headers, name))
+            continue;
         const lname = name.toLowerCase();
         if ((lname.slice(0, 6) === "x-amz-" && !options.unhoistableHeaders?.has(lname)) ||
             options.hoistableHeaders?.has(lname)) {
@@ -32540,7 +32825,9 @@ const moveHeadersToQuery = (request, options = {}) => {
 
 const prepareRequest = (request) => {
     request = HttpRequest.clone(request);
-    for (const headerName of Object.keys(request.headers)) {
+    for (const headerName in request.headers) {
+        if (!hasOwn(request.headers, headerName))
+            continue;
         if (GENERATED_HEADERS.indexOf(headerName.toLowerCase()) > -1) {
             delete request.headers[headerName];
         }
@@ -36956,11 +37243,77 @@ class Request {
     }
   }
 
-  onUpgrade (statusCode, headers, socket) {
+  /**
+   * @param {number|null} statusCode
+   * @param {Buffer[]|null} headers
+   * @param {import('node:stream').Duplex} socket
+   * @param {string} [statusText]
+   */
+  onUpgrade (statusCode, headers, socket, statusText = '') {
+    this.onFinally()
+
     assert(!this.aborted)
     assert(!this.completed)
 
-    return this[kHandler].onUpgrade(statusCode, headers, socket)
+    if (statusCode !== null) {
+      this.#publishUpgradeHeaders(statusCode, headers, statusText)
+    }
+
+    const result = this[kHandler].onUpgrade(statusCode, headers, socket)
+
+    if (!this.aborted) {
+      this.completed = true
+      if (statusCode !== null) {
+        this.#publishUpgradeTrailers()
+      }
+    }
+
+    return result
+  }
+
+  /**
+   * @param {number} statusCode
+   * @param {import('node:http2').IncomingHttpHeaders} headers
+   * @param {(headers: import('node:http2').IncomingHttpHeaders) => Buffer[]} parseHeaders
+   * @param {string} [statusText]
+   */
+  onUpgradeResponse (statusCode, headers, parseHeaders, statusText = '') {
+    assert(!this.aborted)
+    assert(this.completed)
+
+    if (channels.headers.hasSubscribers) {
+      this.#publishUpgradeHeaders(statusCode, parseHeaders(headers), statusText)
+    }
+    this.#publishUpgradeTrailers()
+  }
+
+  /**
+   * @param {Error} error
+   */
+  onUpgradeError (error) {
+    assert(!this.aborted)
+    assert(this.completed)
+
+    if (channels.error.hasSubscribers) {
+      channels.error.publish({ request: this, error })
+    }
+  }
+
+  /**
+   * @param {number} statusCode
+   * @param {Buffer[]} headers
+   * @param {string} statusText
+   */
+  #publishUpgradeHeaders (statusCode, headers, statusText) {
+    if (channels.headers.hasSubscribers) {
+      channels.headers.publish({ request: this, response: { statusCode, headers, statusText } })
+    }
+  }
+
+  #publishUpgradeTrailers () {
+    if (channels.trailers.hasSubscribers) {
+      channels.trailers.publish({ request: this, trailers: [] })
+    }
   }
 
   onComplete (trailers) {
@@ -38864,7 +39217,7 @@ class Parser {
   }
 
   onUpgrade (head) {
-    const { upgrade, client, socket, headers, statusCode } = this
+    const { upgrade, client, socket, headers, statusCode, statusText } = this
 
     assert(upgrade)
     assert(client[kSocket] === socket)
@@ -38899,9 +39252,10 @@ class Parser {
     client.emit('disconnect', client[kUrl], [client], new InformationalError('upgrade'))
 
     try {
-      request.onUpgrade(statusCode, headers, socket)
-    } catch (err) {
-      util.destroy(socket, err)
+      request.onUpgrade(statusCode, headers, socket, statusText)
+    } catch (error) {
+      util.errorRequest(client, request, error)
+      util.destroy(socket, error)
     }
 
     client[kResume]()
@@ -39308,7 +39662,7 @@ async function connectH1 (client, socket) {
 
 function clearIdleSocketValidation (socket) {
   if (socket[kIdleSocketValidationTimeout]) {
-    clearTimeout(socket[kIdleSocketValidationTimeout])
+    clearImmediate(socket[kIdleSocketValidationTimeout])
     socket[kIdleSocketValidationTimeout] = null
   }
 
@@ -39317,15 +39671,23 @@ function clearIdleSocketValidation (socket) {
 
 function scheduleIdleSocketValidation (client, socket) {
   socket[kIdleSocketValidation] = 1
-  socket[kIdleSocketValidationTimeout] = setTimeout(() => {
+  // Yield to the check phase (after poll) so unsolicited bytes / FIN / RST
+  // already pending on this idle keep-alive socket are processed before the
+  // next request is written (GHSA-35p6-xmwp-9g52).
+  //
+  // setTimeout(0) pays Node's ~1ms timer floor on every sequential reuse
+  // (#5493). setImmediate avoids that, but an *unref'd* Immediate lets poll
+  // block for ~500ms when the event loop is otherwise idle (#5600 / #5606).
+  // A ref'd Immediate both keeps the pending request alive and makes poll
+  // return immediately — the hybrid those issues asked for.
+  socket[kIdleSocketValidationTimeout] = setImmediate(() => {
     socket[kIdleSocketValidationTimeout] = null
     socket[kIdleSocketValidation] = 2
 
     if (client[kSocket] === socket && !socket.destroyed) {
       client[kResume]()
     }
-  }, 0)
-  socket[kIdleSocketValidationTimeout].unref?.()
+  })
 }
 
 /**
@@ -39474,12 +39836,22 @@ function writeH1 (client, request) {
   const socket = client[kSocket]
   clearIdleSocketValidation(socket)
 
-  const abort = (err) => {
-    if (request.aborted || request.completed) {
+  /**
+   * @param {Error} [error]
+   */
+  const abort = (error) => {
+    if (request.aborted) {
       return
     }
 
-    util.errorRequest(client, request, err || new RequestAbortedError())
+    if (request.completed) {
+      if (request.upgrade || request.method === 'CONNECT') {
+        util.destroy(socket, new InformationalError('aborted'))
+      }
+      return
+    }
+
+    util.errorRequest(client, request, error || new RequestAbortedError())
 
     util.destroy(body)
     util.destroy(socket, new InformationalError('aborted'))
@@ -39937,6 +40309,7 @@ module.exports = connectH1
 
 
 const assert = __nccwpck_require__(4589)
+const { errorMonitor } = __nccwpck_require__(8474)
 const { pipeline } = __nccwpck_require__(7075)
 const util = __nccwpck_require__(3440)
 const {
@@ -40011,6 +40384,15 @@ function parseH2Headers (headers) {
   }
 
   return result
+}
+
+/**
+ * @param {import('node:http2').IncomingHttpHeaders} headers
+ * @returns {Buffer[]}
+ */
+function parseH2ResponseHeaders (headers) {
+  const { [HTTP2_HEADER_STATUS]: _statusCode, ...realHeaders } = headers
+  return parseH2Headers(realHeaders)
 }
 
 async function connectH2 (client, socket) {
@@ -40233,22 +40615,32 @@ function writeH2 (client, request) {
   headers[HTTP2_HEADER_AUTHORITY] = host || `${hostname}${port ? `:${port}` : ''}`
   headers[HTTP2_HEADER_METHOD] = method
 
-  const abort = (err) => {
-    if (request.aborted || request.completed) {
+  /**
+   * @param {Error} [error]
+   */
+  const abort = (error) => {
+    if (request.aborted) {
       return
     }
 
-    err = err || new RequestAbortedError()
+    if (request.completed) {
+      if (method === 'CONNECT' && stream != null) {
+        util.destroy(stream, error || new RequestAbortedError())
+      }
+      return
+    }
 
-    util.errorRequest(client, request, err)
+    error = error || new RequestAbortedError()
+
+    util.errorRequest(client, request, error)
 
     if (stream != null) {
-      util.destroy(stream, err)
+      util.destroy(stream, error)
     }
 
     // We do not destroy the socket as we can continue using the session
     // the stream get's destroyed and the session remains to create new streams
-    util.destroy(body, err)
+    util.destroy(body, error)
     client[kQueue][client[kRunningIdx]++] = null
     client[kResume]()
   }
@@ -40267,25 +40659,57 @@ function writeH2 (client, request) {
 
   if (method === 'CONNECT') {
     session.ref()
-    // We are already connected, streams are pending, first request
-    // will create a new stream. We trigger a request to create the stream and wait until
-    // `ready` event is triggered
     // We disabled endStream to allow the user to write to the stream
     stream = session.request(headers, { endStream: false, signal })
+    let upgradeResponseFinished = false
 
-    if (stream.id && !stream.pending) {
-      request.onUpgrade(null, null, stream)
-      ++session[kOpenStreams]
-      client[kQueue][client[kRunningIdx]++] = null
-    } else {
-      stream.once('ready', () => {
-        request.onUpgrade(null, null, stream)
-        ++session[kOpenStreams]
-        client[kQueue][client[kRunningIdx]++] = null
-      })
+    /**
+     * @param {import('node:http2').IncomingHttpHeaders} headers
+     */
+    const onResponse = (headers) => {
+      upgradeResponseFinished = true
+      stream.off(errorMonitor, onUpgradeError)
+      request.onUpgradeResponse(Number(headers[HTTP2_HEADER_STATUS]), headers, parseH2ResponseHeaders)
     }
 
+    /**
+     * @param {Error} error
+     */
+    const onUpgradeError = (error) => {
+      upgradeResponseFinished = true
+      stream.off('response', onResponse)
+      request.onUpgradeError(error)
+    }
+
+    const onReady = () => {
+      try {
+        request.onUpgrade(null, null, stream)
+      } catch (error) {
+        stream.off('response', onResponse)
+        abort(error)
+        return
+      }
+
+      if (request.aborted) {
+        return
+      }
+
+      stream.off('error', abort)
+      stream.once(errorMonitor, onUpgradeError)
+      client[kQueue][client[kRunningIdx]++] = null
+    }
+
+    stream.once('response', onResponse)
+    stream.once('error', abort)
+    ++session[kOpenStreams]
+    onReady()
+
     stream.once('close', () => {
+      if (!upgradeResponseFinished && request.completed) {
+        stream.off('response', onResponse)
+        stream.off(errorMonitor, onUpgradeError)
+        request.onUpgradeError(new InformationalError(`HTTP/2: "stream error" received - code ${stream.rstCode}`))
+      }
       session[kOpenStreams] -= 1
       if (session[kOpenStreams] === 0) session.unref()
     })
@@ -42997,6 +43421,7 @@ class RetryHandler {
     this.end = null
     this.etag = null
     this.resume = null
+    this.headersSent = false
 
     // Handle possible onConnect duplication
     this.handler.onConnect(reason => {
@@ -43007,6 +43432,20 @@ class RetryHandler {
         this.reason = reason
       }
     })
+  }
+
+  checkpointResponseEnd (headers, resume) {
+    if (this.end == null && this.opts.method !== 'HEAD') {
+      const contentLength = headers['content-length']
+      this.end = contentLength != null ? Number(contentLength) - 1 : null
+
+      assert(
+        this.end == null || Number.isFinite(this.end),
+        'invalid content-length'
+      )
+    }
+
+    this.resume = this.end != null ? resume : null
   }
 
   onRequestSent () {
@@ -43097,7 +43536,12 @@ class RetryHandler {
     this.retryCount += 1
 
     if (statusCode >= 300) {
-      if (this.retryOpts.statusCodes.includes(statusCode) === false) {
+      // Only expose a response if no earlier attempt has reached the caller.
+      // Otherwise abort this attempt so the error settles the existing body
+      // instead of replacing it with a new response.
+      if (!this.headersSent && this.retryOpts.statusCodes.includes(statusCode) === false) {
+        this.headersSent = true
+        this.checkpointResponseEnd(headers, resume)
         return this.handler.onHeaders(
           statusCode,
           rawHeaders,
@@ -43166,8 +43610,15 @@ class RetryHandler {
 
       const { start, size, end = size - 1 } = contentRange
 
-      assert(this.start === start, 'content-range mismatch')
-      assert(this.end == null || this.end === end, 'content-range mismatch')
+      if (this.start !== start || (this.end != null && this.end !== end)) {
+        this.abort(
+          new RequestRetryError('Content-Range mismatch', statusCode, {
+            headers,
+            data: { count: this.retryCount }
+          })
+        )
+        return false
+      }
 
       this.resume = resume
       return true
@@ -43179,6 +43630,7 @@ class RetryHandler {
         const range = parseRangeHeader(headers['content-range'])
 
         if (range == null) {
+          this.headersSent = true
           return this.handler.onHeaders(
             statusCode,
             rawHeaders,
@@ -43217,6 +43669,7 @@ class RetryHandler {
       )
 
       this.resume = resume
+      this.headersSent = true
       this.etag = headers.etag != null ? headers.etag : null
 
       // Weak etags are not useful for comparison nor cache
@@ -43256,7 +43709,7 @@ class RetryHandler {
   }
 
   onError (err) {
-    if (this.aborted || isDisturbed(this.opts.body)) {
+    if (this.aborted || isDisturbed(this.opts.body) || (this.headersSent && this.resume == null)) {
       return this.handler.onError(err)
     }
 
@@ -47742,6 +48195,49 @@ const COLON = 0x3A
  */
 const SPACE = 0x20
 
+const DATA = Buffer.from('data')
+const EVENT = Buffer.from('event')
+const ID = Buffer.from('id')
+const RETRY = Buffer.from('retry')
+
+function isASCIINumberBytes (buffer, start) {
+  if (start >= buffer.length) {
+    return false
+  }
+
+  for (let i = start; i < buffer.length; i++) {
+    if (buffer[i] < 0x30 || buffer[i] > 0x39) {
+      return false
+    }
+  }
+
+  return true
+}
+
+function isValidLastEventIdBytes (buffer, start) {
+  for (let i = start; i < buffer.length; i++) {
+    if (buffer[i] === 0x00) {
+      return false
+    }
+  }
+
+  return true
+}
+
+function isFieldName (line, length, field) {
+  if (length !== field.length) {
+    return false
+  }
+
+  for (let i = 0; i < length; i++) {
+    if (line[i] !== field[i]) {
+      return false
+    }
+  }
+
+  return true
+}
+
 /**
  * @typedef {object} EventSourceStreamEvent
  * @type {object}
@@ -47782,11 +48278,14 @@ class EventSourceStream extends Transform {
   eventEndCheck = false
 
   /**
-   * @type {Buffer}
+   * @type {Buffer[]}
    */
-  buffer = null
+  chunks = []
 
+  chunkIndex = 0
   pos = 0
+  lineChunkIndex = 0
+  linePos = 0
 
   event = {
     data: undefined,
@@ -47825,92 +48324,20 @@ class EventSourceStream extends Transform {
       return
     }
 
-    // Cache the chunk in the buffer, as the data might not be complete while
-    // processing it
-    // TODO: Investigate if there is a more performant way to handle
-    // incoming chunks
-    // see: https://github.com/nodejs/undici/issues/2630
-    if (this.buffer) {
-      this.buffer = Buffer.concat([this.buffer, chunk])
-    } else {
-      this.buffer = chunk
-    }
+    this.chunks.push(chunk)
 
     // Strip leading byte-order-mark if we opened the stream and started
     // the processing of the incoming data
     if (this.checkBOM) {
-      switch (this.buffer.length) {
-        case 1:
-          // Check if the first byte is the same as the first byte of the BOM
-          if (this.buffer[0] === BOM[0]) {
-            // If it is, we need to wait for more data
-            callback()
-            return
-          }
-          // Set the checkBOM flag to false as we don't need to check for the
-          // BOM anymore
-          this.checkBOM = false
-
-          // The buffer only contains one byte so we need to wait for more data
-          callback()
-          return
-        case 2:
-          // Check if the first two bytes are the same as the first two bytes
-          // of the BOM
-          if (
-            this.buffer[0] === BOM[0] &&
-            this.buffer[1] === BOM[1]
-          ) {
-            // If it is, we need to wait for more data, because the third byte
-            // is needed to determine if it is the BOM or not
-            callback()
-            return
-          }
-
-          // Set the checkBOM flag to false as we don't need to check for the
-          // BOM anymore
-          this.checkBOM = false
-          break
-        case 3:
-          // Check if the first three bytes are the same as the first three
-          // bytes of the BOM
-          if (
-            this.buffer[0] === BOM[0] &&
-            this.buffer[1] === BOM[1] &&
-            this.buffer[2] === BOM[2]
-          ) {
-            // If it is, we can drop the buffered data, as it is only the BOM
-            this.buffer = Buffer.alloc(0)
-            // Set the checkBOM flag to false as we don't need to check for the
-            // BOM anymore
-            this.checkBOM = false
-
-            // Await more data
-            callback()
-            return
-          }
-          // If it is not the BOM, we can start processing the data
-          this.checkBOM = false
-          break
-        default:
-          // The buffer is longer than 3 bytes, so we can drop the BOM if it is
-          // present
-          if (
-            this.buffer[0] === BOM[0] &&
-            this.buffer[1] === BOM[1] &&
-            this.buffer[2] === BOM[2]
-          ) {
-            // Remove the BOM from the buffer
-            this.buffer = this.buffer.subarray(3)
-          }
-
-          // Set the checkBOM flag to false as we don't need to check for the
-          this.checkBOM = false
-          break
+      if (this.handleBOM()) {
+        callback()
+        return
       }
     }
 
-    while (this.pos < this.buffer.length) {
+    while (this.hasCurrentByte()) {
+      const byte = this.currentByte()
+
       // If the previous line ended with an end-of-line, we need to check
       // if the next character is also an end-of-line.
       if (this.eventEndCheck) {
@@ -47923,10 +48350,9 @@ class EventSourceStream extends Transform {
         if (this.crlfCheck) {
           // If the current character is a line feed, we can remove it
           // from the buffer and reset the crlfCheck flag
-          if (this.buffer[this.pos] === LF) {
-            this.buffer = this.buffer.subarray(this.pos + 1)
-            this.pos = 0
+          if (byte === LF) {
             this.crlfCheck = false
+            this.consumeCurrentByte()
 
             // It is possible that the line feed is not the end of the
             // event. We need to check if the next character is an
@@ -47942,19 +48368,17 @@ class EventSourceStream extends Transform {
           this.crlfCheck = false
         }
 
-        if (this.buffer[this.pos] === LF || this.buffer[this.pos] === CR) {
+        if (byte === LF || byte === CR) {
           // If the current character is a carriage return, we need to
           // set the crlfCheck flag to true, as we need to check if the
           // next character is a line feed so we can remove it from the
           // buffer
-          if (this.buffer[this.pos] === CR) {
+          if (byte === CR) {
             this.crlfCheck = true
           }
 
-          this.buffer = this.buffer.subarray(this.pos + 1)
-          this.pos = 0
-          if (
-            this.event.data !== undefined || this.event.event || this.event.id || this.event.retry) {
+          this.consumeCurrentByte()
+          if (this.hasPendingEvent()) {
             this.processEvent(this.event)
           }
           this.clearEvent()
@@ -47968,22 +48392,18 @@ class EventSourceStream extends Transform {
 
       // If the current character is an end-of-line, we can process the
       // line
-      if (this.buffer[this.pos] === LF || this.buffer[this.pos] === CR) {
+      if (byte === LF || byte === CR) {
         // If the current character is a carriage return, we need to
         // set the crlfCheck flag to true, as we need to check if the
         // next character is a line feed
-        if (this.buffer[this.pos] === CR) {
+        if (byte === CR) {
           this.crlfCheck = true
         }
 
         // In any case, we can process the line as we reached an
         // end-of-line character
-        this.parseLine(this.buffer.subarray(0, this.pos), this.event)
-
-        // Remove the processed line from the buffer
-        this.buffer = this.buffer.subarray(this.pos + 1)
-        // Reset the position as we removed the processed line from the buffer
-        this.pos = 0
+        this.parseLine(this.readLine(), this.event)
+        this.consumeCurrentByte()
         // A line was processed and this could be the end of the event. We need
         // to check if the next line is empty to determine if the event is
         // finished.
@@ -47991,7 +48411,7 @@ class EventSourceStream extends Transform {
         continue
       }
 
-      this.pos++
+      this.advanceCursor()
     }
 
     callback()
@@ -48016,64 +48436,53 @@ class EventSourceStream extends Transform {
       return
     }
 
-    let field = ''
-    let value = ''
+    let fieldLength = line.length
+    let valueStart = line.length
 
     // If the line contains a U+003A COLON character (:)
     if (colonPosition !== -1) {
-      // Collect the characters on the line before the first U+003A COLON
-      // character (:), and let field be that string.
-      // TODO: Investigate if there is a more performant way to extract the
-      // field
-      // see: https://github.com/nodejs/undici/issues/2630
-      field = line.subarray(0, colonPosition).toString('utf8')
+      fieldLength = colonPosition
 
       // Collect the characters on the line after the first U+003A COLON
       // character (:), and let value be that string.
       // If value starts with a U+0020 SPACE character, remove it from value.
-      let valueStart = colonPosition + 1
+      valueStart = colonPosition + 1
       if (line[valueStart] === SPACE) {
         ++valueStart
       }
-      // TODO: Investigate if there is a more performant way to extract the
-      // value
-      // see: https://github.com/nodejs/undici/issues/2630
-      value = line.subarray(valueStart).toString('utf8')
-
-      // Otherwise, the string is not empty but does not contain a U+003A COLON
-      // character (:)
-    } else {
-      // Process the field using the steps described below, using the whole
-      // line as the field name, and the empty string as the field value.
-      field = line.toString('utf8')
-      value = ''
     }
 
-    // Modify the event with the field name and value. The value is also
-    // decoded as UTF-8
-    switch (field) {
-      case 'data':
-        if (event[field] === undefined) {
-          event[field] = value
-        } else {
-          event[field] += `\n${value}`
-        }
-        break
-      case 'retry':
-        if (isASCIINumber(value)) {
-          event[field] = value
-        }
-        break
-      case 'id':
-        if (isValidLastEventId(value)) {
-          event[field] = value
-        }
-        break
-      case 'event':
-        if (value.length > 0) {
-          event[field] = value
-        }
-        break
+    if (isFieldName(line, fieldLength, DATA)) {
+      const value = line.toString('utf8', valueStart)
+
+      if (event.data === undefined) {
+        event.data = value
+      } else {
+        event.data += `\n${value}`
+      }
+      return
+    }
+
+    if (isFieldName(line, fieldLength, RETRY)) {
+      if (isASCIINumberBytes(line, valueStart)) {
+        event.retry = line.toString('utf8', valueStart)
+      }
+      return
+    }
+
+    if (isFieldName(line, fieldLength, ID)) {
+      if (isValidLastEventIdBytes(line, valueStart)) {
+        event.id = line.toString('utf8', valueStart)
+      }
+      return
+    }
+
+    if (isFieldName(line, fieldLength, EVENT)) {
+      const value = line.toString('utf8', valueStart)
+
+      if (value.length > 0) {
+        event.event = value
+      }
     }
   }
 
@@ -48103,12 +48512,151 @@ class EventSourceStream extends Transform {
   }
 
   clearEvent () {
-    this.event = {
-      data: undefined,
-      event: undefined,
-      id: undefined,
-      retry: undefined
+    this.event.data = undefined
+    this.event.event = undefined
+    this.event.id = undefined
+    this.event.retry = undefined
+  }
+
+  hasPendingEvent () {
+    return this.event.data !== undefined ||
+      this.event.event !== undefined ||
+      this.event.id !== undefined ||
+      this.event.retry !== undefined
+  }
+
+  hasCurrentByte () {
+    return this.chunkIndex < this.chunks.length &&
+      this.pos < this.chunks[this.chunkIndex].length
+  }
+
+  currentByte () {
+    return this.chunks[this.chunkIndex][this.pos]
+  }
+
+  consumeCurrentByte () {
+    this.advanceCursor()
+    this.syncLineStartToCursor()
+  }
+
+  advanceCursor () {
+    this.pos++
+
+    while (this.chunkIndex < this.chunks.length && this.pos >= this.chunks[this.chunkIndex].length) {
+      this.chunkIndex++
+      this.pos = 0
     }
+  }
+
+  syncLineStartToCursor () {
+    this.lineChunkIndex = this.chunkIndex
+    this.linePos = this.pos
+    this.dropConsumedChunks()
+  }
+
+  dropConsumedChunks () {
+    while (this.lineChunkIndex > 0) {
+      this.chunks.shift()
+      this.lineChunkIndex--
+      this.chunkIndex--
+    }
+
+    if (this.chunkIndex === this.chunks.length) {
+      this.chunks.length = 0
+      this.chunkIndex = 0
+      this.pos = 0
+      this.lineChunkIndex = 0
+      this.linePos = 0
+    }
+  }
+
+  readLine () {
+    if (this.lineChunkIndex === this.chunkIndex) {
+      return this.chunks[this.chunkIndex].subarray(this.linePos, this.pos)
+    }
+
+    const chunks = []
+    let length = 0
+
+    for (let i = this.lineChunkIndex; i <= this.chunkIndex; i++) {
+      const chunk = this.chunks[i]
+      const start = i === this.lineChunkIndex ? this.linePos : 0
+      const end = i === this.chunkIndex ? this.pos : chunk.length
+      const slice = chunk.subarray(start, end)
+      length += slice.length
+      chunks.push(slice)
+    }
+
+    return Buffer.concat(chunks, length)
+  }
+
+  peekBufferedByte (offset) {
+    let chunkIndex = this.lineChunkIndex
+    let pos = this.linePos
+
+    while (chunkIndex < this.chunks.length) {
+      const chunk = this.chunks[chunkIndex]
+      const remaining = chunk.length - pos
+
+      if (offset < remaining) {
+        return chunk[pos + offset]
+      }
+
+      offset -= remaining
+      chunkIndex++
+      pos = 0
+    }
+  }
+
+  discardLeadingBytes (count) {
+    while (count > 0 && this.lineChunkIndex < this.chunks.length) {
+      const chunk = this.chunks[this.lineChunkIndex]
+      const remaining = chunk.length - this.linePos
+
+      if (count < remaining) {
+        this.linePos += count
+        count = 0
+      } else {
+        count -= remaining
+        this.lineChunkIndex++
+        this.linePos = 0
+      }
+    }
+
+    this.chunkIndex = this.lineChunkIndex
+    this.pos = this.linePos
+    this.dropConsumedChunks()
+  }
+
+  handleBOM () {
+    const first = this.peekBufferedByte(0)
+    const second = this.peekBufferedByte(1)
+    const third = this.peekBufferedByte(2)
+
+    if (second === undefined) {
+      if (first === BOM[0]) {
+        return true
+      }
+
+      this.checkBOM = false
+      return true
+    }
+
+    if (third === undefined) {
+      if (first === BOM[0] && second === BOM[1]) {
+        return true
+      }
+
+      this.checkBOM = false
+      return false
+    }
+
+    if (first === BOM[0] && second === BOM[1] && third === BOM[2]) {
+      this.discardLeadingBytes(3)
+    }
+
+    this.checkBOM = false
+    return !this.hasCurrentByte()
   }
 }
 
@@ -59400,7 +59948,7 @@ function establishWebSocketConnection (url, protocols, client, ws, onEstablish, 
         // is specified, the server needs to include the same field and one of
         // the selected subprotocol values in its response for the connection to
         // be established.
-        if (!requestProtocols.includes(secProtocol)) {
+        if (requestProtocols === null || !requestProtocols.includes(secProtocol)) {
           failWebsocketConnection(ws, 'Protocol was not set in the opening handshake.')
           return
         }
@@ -60165,7 +60713,12 @@ class PerMessageDeflate {
 
         if (this.#maxPayloadSize > 0 && this.#inflate[kLength] > this.#maxPayloadSize) {
           callback(new MessageSizeExceededError())
+          // The inflater may still hold buffered input that can emit a late
+          // zlib error. Remove the data listener, then deterministically stop
+          // the stream so a subsequent 'error' cannot fire without a listener
+          // (which would terminate the process as an unhandled error event).
           this.#inflate.removeAllListeners()
+          this.#inflate.destroy()
           this.#inflate = null
           return
         }
